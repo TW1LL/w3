@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load humanize %}
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    
+    <div class="col s12 m8">
+      <ul class="collection with-header">
+          <li class="collection-header"><i class="material-icons medium left">shopping_cart</i><h4>My Cart</h4></li>
+          
+             
+          <li class="collection-item">
+            <table class="highlight bordered"> 
+              <thead>
+                <tr>
+                  <th data-field="name" colspan="2">Description</th>
+                  <th data-field="quantity">Quantity</th>
+                  <th data-field="total">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product in cart %}
+                <tr>
+                  <td width="50">
+                    <img src="{% static product.item.image %}" alt="" class="circle left" width="50">
+                  </td>
+                  <td>
+                    <p><a href="/product/{{product.item.id}}">{{ product.item.name }}</a><br />
+                    $ {{ product.item.price |floatformat:2|intcomma}}<br />
+                    <a href="/product/{{product.item.id}}"><i class="material-icons">info</i></a>
+                    <a class="red-text" href="/cart/qty/{{product.item.id}}/-999"><i class="material-icons">delete</i></a>
+                    </p>
+                  </td>
+                  <td>
+                     <a class="white-text" href="/cart/qty/{{product.item.id}}/-1"><i class="red material-icons">remove</i></a> {{ product.quantity }} <a class="white-text" href="/cart/qty/{{product.item.id}}/1"><i class="green material-icons">add</i></a><br>
+                  </td>
+                  <td>
+                    ${{ product.subtotal|floatformat:2|intcomma }}
+                  </td>
+                </tr>
+                   {% endfor %}
+              </tbody>
+            </table>
+          </li>
+       
+      </ul>
+    </div>
+    <div class="col s12 m4">
+      <div class="card blue-grey darken-1">
+        <div class="card-content">
+          <span class="card-title">Summary</span>
+          <div class="card-panel">Total: <span class="right">$ {{total|floatformat:2|intcomma}}</span></div>
+        </div>
+        <div class="card-action center">
+         <a href="/checkout" class="btn waves-light waves-effect blue-grey lighten-1 white-text">Checkout</a>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+        
+     
+
+{% endblock %}

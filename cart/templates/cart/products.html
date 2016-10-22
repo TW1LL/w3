@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="row">
+    {% for product in products %}
+        <div class="col s12 m6">
+            <div class="card medium">
+                <div class="card-image waves-effect waves-block waves-light">
+                    <img class="activator" src="{% static product.image %} ">
+                </div>
+                <div class="card-content activator">
+                    <span class="card-title activator grey-text text-darken-4">{{ product.name }}<i class="material-icons right">more_vert</i></span>
+                    <div class="card-action">
+                        <a href="/product/{{product.id}}/cart" class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
+                    </div>
+                </div>
+                <div class="card-reveal">
+                    <span class="card-title grey-text text-darken-4">{{ product.name }}<i class="material-icons right">close</i></span>
+                    <p>{{ product.description }}</p>
+                    <div class="card-action">
+                        <a href="/product/{{product.id}}/cart" class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
+                        <a href="/product/{{product.id}}" class="left blue-grey-text">View More Info</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+        
+      </div>
+{% endblock %}
+

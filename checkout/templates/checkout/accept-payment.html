@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load staticfiles %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col s12 m12">
+        {% block checkout-summary %}
+        
+           <div class="card">
+           
+              <div class="card-content">
+              <span class="card-title black-text">Order Summary</span>
+              <div class="card-panel">
+                   
+                  <div class="row" style="margin-bottom: 0px">
+                      <div class="col s1"><img src="{% static summary.desc_item.image %}" class="circle responsive-img"></div>
+                      <div class="col s11"><a href="/product/{{summary.desc_item.id}}">{{summary.desc}}</a></div>
+                  </div>
+              </div>
+              <ul class="collection">
+                  <li class="collection-item">Subtotal: <span class="right">$ {{summary.total.sub|floatformat:2|intcomma}}</span></li>
+                  <li class="collection-item">Shipping: <span class="right">$ {{summary.total.shipping|floatformat:2|intcomma}}</span></li>
+              </ul>
+              {% block checkout-ship-address %}
+                <div class="card-panel">
+                    <span class="grey-text">Ship To:</span>
+                    {{summary.address | linebreaks}}
+                </div>
+          
+        {% endblock %}
+        </div>
+        <div class="card-action">
+            <p>Total:<span class="right">$ {{summary.total.total |floatformat:2|intcomma}}</span></p>
+            <div class="right">
+             <form action="/checkout" method="POST">
+                {% csrf_token %}
+              <script
+                src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                data-key="{{stripe}}"
+                data-amount="{{summary.total.card}}"
+                data-name="{{summary.name}}"
+                data-description="{{summary.desc}}"
+                data-image="{{summary.image}}">
+              </script>
+            </form>
+            </div>
+        
+        </div>
+      </div>
+      
+        {% endblock %}
+        </div>
+        
+    </div>
+
+
+</div>
+    
+</div>
+{% endblock %}

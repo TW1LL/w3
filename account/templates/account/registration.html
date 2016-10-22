@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h4>Register</h4>
+    {% if form.errors %}
+    <div class="card-panel">
+        {{form.errors}}
+    </div>
+    {% endif %}
+<form method="POST" action="/account/register">
+    {% csrf_token %}
+    
+    <div class="row">
+        <div class="col s12 input-field">
+           {{form.username}}
+           {{form.username.label_tag}}
+        </div>
+        <div class="col s12 input-field">
+            {{form.email}}
+            {{form.email.label_tag}}
+        </div>
+        <div class="col s12 m6 input-field">
+            {{form.first_name}}
+            {{form.first_name.label_tag}}
+        </div>
+        <div class="col s12 m6 input-field">
+            {{form.last_name}}
+            {{form.last_name.label_tag}}
+        </div>
+        <div class="col s12 input-field">
+            {{form.password1}}
+            {{form.password1.label_tag}}
+        </div>
+        <div class="col s12 input-field">
+            {{form.password2}}
+            {{form.password2.label_tag}}
+        </div>
+        
+        
+    </div>
+    
+    <button type="submit" value="Login" class=" center waves-effect waves-light blue-grey lighten-2 btn">
+            Register<i class="material-icons right">send</i> 
+        </button>
+        <input type="hidden" name="next" value="{{next}}" />
+        
+</form>
+
+</div>
+{% endblock %}

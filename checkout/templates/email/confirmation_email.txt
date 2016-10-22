@@ -1,0 +1,13 @@
+{% load humanize %}
+{{order.desc}}
+Ordered on {{order.created|date:"F d, Y"}}
+Shipping Address:
+{{order.shipping_address | linebreaks}}
+Shipping Information:
+Method: {{shipment.carrier}} {{shipment.service}}
+Estimated Delivery Days: {{shipment.est_delivery_days}} days
+Guranteed Delivery Date: {{shipment.delivery_date_guaranteed}}
+Tracking Number: {{order.shipping_tracking}}
+Subtotal: $ {{order.sub|floatformat:2|intcomma}}
+Shipping: $ {{shipment.rate|floatformat:2|intcomma}}
+Total Paid:$ {{order.total|floatformat:2|intcomma}}

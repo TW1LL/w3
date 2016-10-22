@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    {% if form.errors %}
+        <p>There was an error processing your login.</p>
+    {% endif %}
+    
+    <form method="post" action="{% url 'django.contrib.auth.views.login' %}" class="col s12">
+        {% csrf_token %}
+        <div class="row">
+            <div class="input-field col s12">
+                {{ form.username }}
+                {{ form.username.label_tag }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-field col s12">
+                {{ form.password }}
+                {{ form.password.label_tag }}
+            </div>
+        </div>
+        
+        <button type="submit" value="Login" class=" center waves-effect waves-light blue-grey lighten-2 btn">
+            Login <i class="material-icons right">send</i> 
+        </button>
+        <a class="center waves-effect waves-light blue-grey lighten-2 btn" href="/account/register">Register</a>
+        <input type="hidden" name="next" value="{{next}}" />
+        
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load staticfiles %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col s12 m12">
+        {% block checkout-summary %}
+           <div class="card">
+           
+              <div class="card-content">
+              <div class="card blue-grey darken-1">
+                <div class="card-content">
+                    <span class="card-title">Recent Orders</span>
+                    <div class="row">
+                        {% for order in orders %}
+                        <div class="col m3 s12">
+                            <div class="card-panel">
+                                <a href="/order/{{order.id}}">
+                                <img src="{% static order.image %}" class="responsive-img" />
+                                <p>Total: $ {{order.total|floatformat:2|intcomma}}</p>
+                                <p>ordered {{order.created|naturaltime}}</p>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+          
+        </div>
+        <div class="card-action">
+            <p>Showing latest 12 orders. </p>
+
+        </div>
+      </div>
+      
+        {% endblock %}
+        </div>
+        
+    </div>
+
+
+</div>
+    
+</div>
+{% endblock %}

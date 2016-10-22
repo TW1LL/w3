@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+<div id="index-banner" class="parallax-container">
+    <div class="section no-pad-bot">
+      <div class="container">
+        <br><br>
+        <h1 class="header center teal-text text-lighten-3" style="text-shadow: 2px 2px #555;">{% autoescape off %}{{page.title}}{% endautoescape %}</h1>
+        <div class="row center">
+          <h5 class="header col s12 light" style="text-shadow: 2px 2px #555;">{% autoescape off %}{{page.slogan}}{% endautoescape %}</h5>
+        </div>
+        <div class="row center">
+          <a href="/product" id="download-button" class="btn-large waves-effect waves-light blue-grey lighten-1">View Products</a>
+        </div>
+        <br><br>
+
+      </div>
+    </div>
+    <div class="parallax"><img src="{% static "cart/images/wallpaper-2248076.jpg" %}" alt="Unsplashed background img 1" style="display: block; transform: translate3d(-50%, 242px, 0px);"></div>
+  </div>
+<div class="container">
+    <div class="section">
+
+      <!--   Icon Section   -->
+      <div class="row">
+        <div class="col s12 m6">
+          <div class="icon-block">
+            <h2 class="center brown-text"><i class="material-icons">schedule</i></h2>
+            <h5 class="center">Quick shipments</h5>
+
+            <p class="light">Once you hit buy and follow through, we immediately begin processing your order, with the customizations you put in place on your order.</p>
+          </div>
+        </div>
+
+        <div class="col s12 m6">
+          <div class="icon-block">
+            <h2 class="center brown-text"><i class="material-icons">announcement</i></h2>
+            <h5 class="center">Notifications</h5>
+
+            <p class="light">We will be in constant communcation with you as the order process is being completed, from tracking numbers, to progress reports, to order interruptions and delays.</p>
+          </div>
+        </div>
+
+        
+      </div>
+
+    </div>
+</div>
+<div class="parallax-container valign-wrapper">
+  <div class="section no-pad-bot">
+    <div class="container">
+      <div class="row">
+        {% for product in products %}
+        <div class="col s12 m6">
+            <div class="card small">
+                <div class="card-image waves-effect waves-block waves-light">
+                    <img class="activator" src="{% static product.image %} ">
+                </div>
+                <div class="card-content activator">
+                    <span class="card-title activator grey-text text-darken-4">{{ product.name }}<i class="material-icons right">more_vert</i></span>
+                    <div class="card-action">
+                        <a href="/product/{{product.id}}/cart" class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
+                    </div>
+                </div>
+                <div class="card-reveal">
+                    <span class="card-title grey-text text-darken-4">{{ product.name }}<i class="material-icons right">close</i></span>
+                    <p>{{ product.description }}</p>
+                    <div class="card-action">
+                        <a href="/product/{{product.id}}/cart" class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
+                        <a href="/product/{{product.id}}" class="left blue-grey-text">View More Info</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="parallax"><img src="{% static "cart/images/dark-watch-4272x2848-wallpaper-2367428.jpg" %}" alt="Unsplashed background img 2" style="display: block; transform: translate3d(-50%, 242px, 0px);"></div>
+</div>
+   
+{% endblock %}
+

@@ -1,0 +1,73 @@
+{% load humanize %}
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css" type="text/css" />
+    </head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col s12 m12">
+           <div class="card">
+           
+              <div class="card-content">
+              <span class="card-title black-text">{{title}}</span>
+              <div class="row">
+                  <div class="col s12 m6">
+                      <div class="card-panel">
+                          <div class="row" style="margin-bottom: 0px">
+                              <div class="col s11"><a href="/product/{{summary.desc_item.id}}">{{order.desc}}</a></div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col s12 m6">
+                      <div class="card-panel">
+                          <span class="grey-text">Ordered on </span>{{order.created|date:"F d, Y"}}
+                          
+                      </div>
+                  </div>
+              </div>
+              <div class="row">
+                <div class="col m4 s12">
+                  <div class="card-panel">
+                    <span class="grey-text">Shipping Address:</span>
+                    {{order.shipping_address | linebreaks}}
+                </div>  
+                </div>
+                <div class="col m8 s12">
+                    <div class="card-panel">
+                        <span class="grey-text">Shipping Information:</span>
+                        <ul class="collection">
+                            <li class="collection-item">Method: <span class="right">{{shipment.carrier}} {{shipment.service}}</span></li>
+                            <li class="collection-item">Estimated Delivery Days: <span class="right">{{shipment.est_delivery_days}} days</span></li>
+                            <li class="collection-item">Guranteed Delivery Date: <span class="right">{{shipment.delivery_date_guaranteed}}</span></li>
+                            <li class="collection-item blue-grey lighten-3"><b>Tracking Number</b>: <span class="right">{{order.shipping_tracking}}</span></li>
+                        </ul>
+                    </div>
+                </div>
+                
+              </div>
+                
+              <ul class="collection">
+                  <li class="collection-item">Subtotal: <span class="right">$ {{order.sub|floatformat:2|intcomma}}</span></li>
+                  <li class="collection-item">Shipping: <span class="right">$ {{shipment.rate|floatformat:2|intcomma}}</span></li>
+                  <li class="collection-item">Total Paid:<span class="right">$ {{order.total |floatformat:2|intcomma}}</span></li>
+              </ul>
+
+          
+        </div>
+        <div class="card-action">
+            <p>Your order has been finalized. </p>
+
+        </div>
+      </div>
+      
+        </div>
+        
+    </div>
+
+
+</div>
+    
+</div>
+</body>
+</html>
