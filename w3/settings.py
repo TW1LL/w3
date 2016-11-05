@@ -5,9 +5,10 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SECRET_KEY = '26l$e8=c#^)+=-+bm_)x7b%1_79#r!*&5x2^esbb(38s2n_@#g'
 
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['pyfitz.nfshost.com', 'w3co.fairlyefficient.net', 'wcubed.co', 'wagner2fitz1-tfitz237.c9.io', '127.0.0.1']
+ALLOWED_HOSTS = ['pyfitz.nfshost.com', 'w3co.fairlyefficient.net', 'wcubed.co', 'wagner2fitz1-tfitz237.c9.io',
+                 '127.0.0.1', 'w3.willwagner.me']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
@@ -117,5 +118,5 @@ STATIC_ROOT = ''
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = ( os.path.join('static'), "/static" )
+STATICFILES_DIRS = (os.path.join('static', "/static"))
 
