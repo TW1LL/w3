@@ -1,10 +1,29 @@
 from django.db import models
 
-# Create your models here.
 
-class SiteConfig(models.Model):
-    title = models.CharField(max_length=255)
-    slogan = models.CharField(max_length=255)
+class Product(models.Model):
+
+    name = models.CharField(max_length=255)
+    image = models.CharField(max_length=255, default="cart/images/cross-sect.jpg")
+    description = models.TextField(default="This is a cool looking watch")
+    on_hand = models.IntegerField()
+    price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+
+    class Meta:
+        abstract = True
+
+    def update_on_hand(self, amount):
+        self.on_hand = self.on_hand + amount
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def subcategories():
+        categories = []
+        for cls in Product.__subclasses__():
+            categories.append({"name": cls.__name__, "image": cls.cat_img, "description": cls.cat_description})
+        return categories
 
 
 class Part(models.Model):
@@ -20,19 +39,17 @@ class Part(models.Model):
         return self.name
 
 
-class Watch(models.Model):
-    name = models.CharField(max_length=255)
-    image = models.CharField(max_length=255, default="cart/images/cross-sect.jpg")
+class Watch(Product):
+
+    cat_img = "watches/img.jpg"
+    cat_description = "Sweet wristpieces that hold time."
     parts = models.ManyToManyField(Part, null=True)
-    description = models.TextField(default="This is a cool looking watch")
-    on_hand = models.IntegerField()
-    price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
-    def update_on_hand(self, amount):
-        self.on_hand = self.on_hand + amount
 
-    def __str__(self):
-        return self.name
+class PaintBall(Product):
+
+    cat_img = "paintball/img.jpg"
+    cat_description = "Sweet gats yo."
 
 
 class ShoppingCart(models.Model):
@@ -43,4 +60,3 @@ class ShoppingCart(models.Model):
 
     def __str__(self):
         return self.owner.username + "'s item - " + str(self.quantity)
-

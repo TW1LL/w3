@@ -1,4 +1,4 @@
-from cart.models import ShoppingCart, SiteConfig
+from cart.models import ShoppingCart
 from django.core.mail import EmailMultiAlternatives
 import easypost, json, stripe
 from django.conf import settings as siteSettings
