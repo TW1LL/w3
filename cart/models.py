@@ -135,10 +135,16 @@ class Watch(Category):
     cat_img = "watches/img.jpg"
     cat_description = "Sophisticated wristpieces that hold time."
 
+    class Meta:
+        verbose_name = "Watch Product"
+
 
 class Paintball(Category):
     cat_img = "paintball/img.jpg"
     cat_description = "Sweet gats."
+
+    class Meta:
+        verbose_name = "Paintball Product"
 
 
 class ShoppingCart(models.Model):

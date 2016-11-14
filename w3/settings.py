@@ -9,7 +9,7 @@ SECRET_KEY = '26l$e8=c#^)+=-+bm_)x7b%1_79#r!*&5x2^esbb(38s2n_@#g'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['wcubed.co', 'www.wcubed.co', '127.0.0.1']
+ALLOWED_HOSTS = ['wcubed.co', 'www.wcubed.co', '127.0.0.1', 'w3.willwagner.me']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
@@ -126,6 +126,7 @@ STATIC_URL = '/static/'
 # temporary directories for serving files in development
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+    MEDIA_ROOT,
     # os.path.join(BASE_DIR, "account/static"),
     # os.path.join(BASE_DIR, "cart/static"),
     # os.path.join(BASE_DIR, "checkout/static"),

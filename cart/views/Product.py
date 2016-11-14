@@ -14,7 +14,6 @@ def product(request, model_name=None, product_id=None):
         page_vars['categories'] = models
         return render(request, 'cart/categories.html', page_vars)
     elif product_id is None:
-        print("model name here", model_name)
         model = apps.get_model('cart', model_name)
         page_vars['products'] = model.objects.all()
         page_vars['category'] = model_name
