@@ -1,14 +1,15 @@
 import os
 
+# the path of the top level folder for this site, e.g. /var/lib/www/w3
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# the path of the folder containing this file
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SECRET_KEY = '26l$e8=c#^)+=-+bm_)x7b%1_79#r!*&5x2^esbb(38s2n_@#g'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['pyfitz.nfshost.com', 'w3co.fairlyefficient.net', 'wcubed.co', 'wagner2fitz1-tfitz237.c9.io',
-                 '127.0.0.1', 'w3.willwagner.me']
+ALLOWED_HOSTS = ['wcubed.co', 'www.wcubed.co', '127.0.0.1']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
@@ -114,9 +115,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_ROOT = ''
+# where new uploaded media files get put and served from
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# the unified location from which to serve files in production
+# STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = (os.path.join('static', "/static"))
-
+# temporary directories for serving files in development
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+    # os.path.join(BASE_DIR, "account/static"),
+    # os.path.join(BASE_DIR, "cart/static"),
+    # os.path.join(BASE_DIR, "checkout/static"),
+    # os.path.join(BASE_DIR, "w3/static")
+    ]

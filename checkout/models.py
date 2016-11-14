@@ -55,10 +55,10 @@ class Order(models.Model):
             purchase['desc'] = purchase['desc'] + ' and ' + str(count - 1) + ' more item(s).'
         # Add shipping address
         if self.customer != None:
-            if self.customer.getName() == None:
+            if self.customer.get_full_name() == None:
                 purchase['address'] = "\n"
             else:
-                purchase['address'] = self.customer.getName() + "\n"
+                purchase['address'] = self.customer.get_full_name() + "\n"
             if self.customer.address == None:
                 pass
             else:
@@ -70,7 +70,7 @@ class Order(models.Model):
 
     def address(self):
         address = self.customer.address.split('\n')
-        name = self.customer.getName()
+        name = self.customer.get_full_name()
         return [name, '', address[0], address[1].split(', ')[0], address[1].split(', ')[1], address[2]]
 
     def items(self):

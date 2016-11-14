@@ -1,25 +1,39 @@
-from cart.models import Product
+from cart.models import Category
 from cart.views.functions import viewVars
 from django.shortcuts import render
 from django.apps import apps
 
 
 #Product related views
-def product(request, model_name=None, id=None):
+def product(request, model_name=None, product_id=None):
 
-    pageVars = viewVars(request)
+    page_vars = viewVars(request)
 
-    if model_name==None:
-        models = Product.subcategories()
-        pageVars['categories'] = models
-        return render(request, 'cart/categories.html', pageVars)
-    elif id==None:
+    if model_name is None:
+        models = Category.get_categories()
+        page_vars['categories'] = models
+        return render(request, 'cart/categories.html', page_vars)
+    elif product_id is None:
+        print("model name here", model_name)
         model = apps.get_model('cart', model_name)
-        pageVars['products'] = model.objects.all()
-        return render(request, 'cart/products.html', pageVars)
+        page_vars['products'] = model.objects.all()
+        page_vars['category'] = model_name
+        print(page_vars)
+        return render(request, 'cart/products.html', page_vars)
     else:
         model = apps.get_model('cart', model_name)
-        pageVars['product'] = model.objects.get(pk=id)
-        pageVars['parts'] = pageVars['product'].parts.all()
-        return render(request, 'cart/product.html',pageVars)
+        page_vars['product'] = model.objects.get(pk=product_id)
+
+        # todo: get parts and images using a model.objects.get
+        try:
+            page_vars['parts'] = page_vars['product'].parts.all()
+        except AttributeError:
+            page_vars['parts'] = None
+
+        try:
+            page_vars['images'] = page_vars['product'].images.all()
+        except AttributeError:
+            page_vars['images'] = None
+
+        return render(request, 'cart/product.html', page_vars)
 

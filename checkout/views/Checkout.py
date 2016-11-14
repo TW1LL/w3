@@ -3,7 +3,7 @@ from decimal import Decimal
 from cart.models import ShoppingCart
 from checkout.models import Order, FinalOrder
 from account.models import UserProfile
-from cart.views.functions import viewVars, ezpost, sendEmail, stripeToken
+from cart.views.functions import viewVars, ezpost, send_email, stripeToken
 from django.shortcuts import render
 from account.forms import UserProfileForm
 from django.http import HttpResponseRedirect
@@ -52,7 +52,7 @@ def shipping(request, userprof, order):
             pageVars['form'] = form
             return render(request, 'checkout/shipping.html', pageVars)
     else:
-        user = userprof.getName().split(' ')
+        user = userprof.get_full_name().split(' ')
         if userprof.address == None:
             form = UserProfileForm(initial = { 'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1] })
         else:
@@ -68,12 +68,12 @@ def shipping(request, userprof, order):
 
   
 def shipping_create(request, userprof):
-        order = createOrder(request.user)
+        order = create_order(request.user)
         if order == False: 
             return HttpResponseRedirect("/account")
         else:
             order = Order.objects.filter(customer = userprof, status__startswith = "CRE")[0]
-            user = userprof.getName().split(' ')
+            user = userprof.get_full_name().split(' ')
             if userprof.address == None:
                 form = UserProfileForm(initial = { 'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1] })
             else:
@@ -94,15 +94,15 @@ def shipping_method(request, userprof, order):
     pageVars = viewVars(request)
     print(request.POST)
     if(request.method == "POST" and 'method' in request.POST):
-        rates = ezpost.viewRates()
+        rates = ezpost.view_rates()
         for i in rates:
             if i.id == request.POST['method']:
                 rate = i
         order = Order.objects.filter(customer = userprof, status__startswith = "CRE").update(shipping_object = rate, status = "CRESHME")
         return HttpResponseRedirect('/checkout')
     else:
-        ezpost.createShipment(order.address())
-        pageVars['methods'] = ezpost.viewRates()      
+        ezpost.create_shipment(order.address())
+        pageVars['methods'] = ezpost.view_rates()
         pageVars['summary'] = order.info()
         return render(request, 'checkout/shipping-method.html', pageVars)
 
@@ -127,7 +127,7 @@ def payment(request, userprof, order):
 def confirmation(request, userprof, order):
     summary = order.info()
     
-    if(request.POST):
+    if request.POST:
         
         token = request.POST['stripeToken']
         try:
@@ -139,7 +139,7 @@ def confirmation(request, userprof, order):
             )
         except stripe.error.CardError as e:
             return HttpResponseRedirect('/checkout')
-        valid, final = finalizeOrder(userprof, order, token, summary)
+        valid, final = finalize_order(userprof, order, token, summary)
         if valid:
             order = Order.objects.filter(customer = userprof, status__startswith = "CRE").update(status = "CHEKOUT")
             ShoppingCart.objects.filter(owner = request.user).delete()
@@ -159,18 +159,16 @@ def confirmation(request, userprof, order):
             email['html'] = htmlt.render(d)
             
             
-            sendEmail(email)
+            send_email(email)
             return HttpResponseRedirect("/order")
     else:
-        pageVars = viewVars(request)
-        pageVars['summary'] = summary
-        pageVars['token'] = order.payment
-        return render(request, "checkout/confirmation.html", pageVars)
+        page_vars = viewVars(request)
+        page_vars['summary'] = summary
+        page_vars['token'] = order.payment
+        return render(request, "checkout/confirmation.html", page_vars)
 
 
-
-
-def createOrder(user):
+def create_order(user):
     cart = ShoppingCart.objects.filter(owner = user.id)
     if len(cart) < 1:
         return False
@@ -181,7 +179,8 @@ def createOrder(user):
         order.cart.add(item)
     return order
 
-def finalizeOrder(userprof, order, payment, info):
+
+def finalize_order(userprof, order, payment, info):
     ship = ezpost.buy(order.shipping_object)
     final = FinalOrder.objects.create(
         created = timezone.now(),
@@ -198,7 +197,9 @@ def finalizeOrder(userprof, order, payment, info):
     for product in order.items():
         final.items.add(product.item)
     return (True, final)
-def createShipment(address):
+
+
+def create_shipment(address):
 
     return easypost.S
     

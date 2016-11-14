@@ -54,8 +54,9 @@ def viewVars(request = None):
 
 
 class Shipment():
-    
-    def __init__(self, address = None):
+
+    def create_shipment(self, address):
+
         self.fromAddress = easypost.Address.create(
           company = 'Wagner Co.',
           street1 = '12 Hawk Drive',
@@ -71,16 +72,13 @@ class Shipment():
         if address != None:
             self.toAddress = easypost.Address.create(name= address[0],company= address[1],street1 = address[2], city = address[3], state = address[4], zip = address[5])
             self.shipment = easypost.Shipment.create(to_address = self.toAddress, from_address = self.fromAddress, parcel = self.parcel)
-            
-            return self.shipment
-    
-    def createShipment(self, address):
+
         self.toAddress = easypost.Address.create(name= address[0],company= address[1],street1 = address[2], city = address[3], state = address[4], zip = address[5])
 
         self.shipment = easypost.Shipment.create(to_address = self.toAddress, from_address = self.fromAddress, parcel = self.parcel)
         return self.shipment
     
-    def viewRates(self, id = None):
+    def view_rates(self, id = None):
         return self.shipment.rates
         
     def buy(self, shipment):
@@ -90,7 +88,7 @@ class Shipment():
         return [self.shipment.postage_label.label_url, self.shipment.tracking_code]
         
 
-def sendEmail(email):
+def send_email(email):
     msg = EmailMultiAlternatives(email['subject'], email['text'], email['from'], [email['to']])
     msg.attach_alternative(email['html'], "text/html")
     msg.send()

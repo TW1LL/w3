@@ -12,6 +12,6 @@ urlpatterns = [
     
     url(r'^product$', views.Product.product, name='product'),
         url(r'^product/(?P<model_name>[a-zA-Z0-9]+)$', views.Product.product, name="categories"),
-        url(r'^product/(?P<model_name>[a-zA-Z0-9]+)/(?P<id>[0-9]+)$', views.Product.product, name='product'),
-        url(r'^product/(?P<model_name>[a-zA-Z0-9]+)/(?P<id>[0-9]+)/cart$', views.Cart.cart_add_product, name='add to cart'),
+        url(r'^product/(?P<model_name>[a-zA-Z0-9]+)/(?P<product_id>[0-9]+)$', views.Product.product, name='product'),
+        url(r'^product/(?P<model_name>[a-zA-Z0-9]+)/(?P<product_id>[0-9]+)/cart$', views.Cart.cart_add_product, name='add to cart'),
 ]

@@ -55,7 +55,7 @@ def account(request):
         count += 1
     pageVars['info'] = {}
     pageVars['info']['address'] = info.address.split('\n')
-    pageVars['info']['name'] = info.getName()
+    pageVars['info']['name'] = info.get_full_name()
     return render(request, 'account/account.html', pageVars)
 
 
@@ -70,14 +70,14 @@ def change_info(request):
 
             pageVars['info'] = {}
             pageVars['info']['address'] = info.address.split('\n')
-            pageVars['info']['name'] = info.getName()
+            pageVars['info']['name'] = info.get_full_name()
             return render(request, 'account/account.html', pageVars)
         else:
             pageVars['form'] = form
             return render(request, 'account/info_change.html', pageVars)
     else:
         userprof = UserProfile.objects.get(user=request.user.id)
-        user = userprof.getName().split(' ')
+        user = userprof.get_full_name().split(' ')
         address = userprof.address.split('\n')
         if len(address) > 1:
             form = UserProfileForm(
