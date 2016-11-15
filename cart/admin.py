@@ -18,5 +18,5 @@ class PaintballAdmin(admin.ModelAdmin):
         'image3',
         'image4',
         'image5',
-        'image_list']
+        'admin_image_list']
     readonly_fields = ['admin_image_list',]
