@@ -17,7 +17,6 @@ def product(request, model_name=None, product_id=None):
         model = apps.get_model('cart', model_name)
         page_vars['products'] = model.objects.all()
         page_vars['category'] = model_name
-        print(page_vars)
         return render(request, 'cart/products.html', page_vars)
     else:
         model = apps.get_model('cart', model_name)

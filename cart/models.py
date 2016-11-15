@@ -1,10 +1,10 @@
 from io import BytesIO
 import os
-import sys
 
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from w3.settings import MEDIA_ROOT
 from PIL import Image
 
@@ -15,6 +15,7 @@ class Category(models.Model):
     description = models.TextField(default="Mechanical designs by w^3")
     on_hand = models.IntegerField(default=0)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+
     preview_image = models.ImageField(null=True, blank=True, upload_to="uploads")
     image1 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image2 = models.ImageField(null=True, blank=True, upload_to="uploads")
@@ -23,6 +24,9 @@ class Category(models.Model):
     image5 = models.ImageField(null=True, blank=True, upload_to="uploads")
 
     image_fields = [image1, image2, image3, image4, image5]
+
+    cat_img = "cart/images/w3rect.png"
+    plural_name = "Default Plural Name"
     preview_image_size = (125, 125)
 
     class Meta:
@@ -38,7 +42,8 @@ class Category(models.Model):
     def get_categories():
         categories = []
         for cls in Category.__subclasses__():
-            categories.append({"name": cls.__name__, "image": cls.cat_img, "description": cls.cat_description})
+            categories.append({"name": cls.__name__, "image": cls.cat_img, "description": cls.cat_description,
+                               "plural_name": cls.plural_name, })
         return categories
 
     def preview_img(self):
@@ -55,10 +60,15 @@ class Category(models.Model):
                                                                                    img.url.replace(".jpg",
                                                                                                    "_preview.jpg")))
         if images:
-            print(images)
             return images
         else:
             return "No image"
+
+    def image(self):
+        if self.preview_image:
+            return "{}/{}".format(MEDIA_ROOT, self.preview_image.url)
+        else:
+            return static(self.cat_img)
 
     # allow the img files to be used in thumbnails/previews
     preview_img.short_description = "Thumb"
@@ -132,16 +142,18 @@ class Part(models.Model):
 
 
 class Watch(Category):
-    cat_img = "watches/img.jpg"
+    # cat_img = "cart/watches/img.jpg"
     cat_description = "Sophisticated wristpieces that hold time."
+    plural_name = "Watches"
 
     class Meta:
         verbose_name = "Watch Product"
 
 
 class Paintball(Category):
-    cat_img = "paintball/img.jpg"
+    # cat_img = "cart/paintball/img.jpg"
     cat_description = "Sweet gats."
+    plural_name = "Paintball Products"
 
     class Meta:
         verbose_name = "Paintball Product"
