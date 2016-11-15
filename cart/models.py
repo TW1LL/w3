@@ -46,13 +46,13 @@ class Category(models.Model):
                                "plural_name": cls.plural_name, })
         return categories
 
-    def preview_img(self):
+    def get_preview_image(self):
         if self.preview_image:
-            return [u'<img src="{}/{}" />'.format(MEDIA_ROOT, self.preview_image.url), ]
+            return [u'<img src="{}" />'.format(self.preview_image.url), ]
         else:
             return "No preview image"
 
-    def image_list(self):
+    def admin_image_list(self):
         images = []
         for img in [self.image1, self.image2, self.image3, self.image4, self.image5]:
             if img:
@@ -64,18 +64,28 @@ class Category(models.Model):
         else:
             return "No image"
 
+    def image_urls(self):
+        images = []
+        for img in [self.image1, self.image2, self.image3, self.image4, self.image5]:
+            if img:
+                images.append(img.url)
+        if images:
+            return images
+        else:
+            return None
+
     def image(self):
-        if self.preview_image:
-            return "{}/{}".format(MEDIA_ROOT, self.preview_image.url)
+        if self.image1:
+            return self.image1.url
         else:
             return static(self.cat_img)
 
     # allow the img files to be used in thumbnails/previews
-    preview_img.short_description = "Thumb"
-    preview_img.allow_tags = True
+    get_preview_image.short_description = "Thumb"
+    get_preview_image.allow_tags = True
 
-    image_list.short_description = "Thumb"
-    image_list.allow_tags = True
+    admin_image_list.short_description = "Thumb"
+    admin_image_list.allow_tags = True
 
     def save(self, *args, **kwargs):
         if self.image1:

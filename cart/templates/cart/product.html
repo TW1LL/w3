@@ -3,44 +3,55 @@
 
 {% block content %}
 <div class="row">
-        <div class="col s12 m5 l6">
-          
-            <div class="card">
-                <div class="card-image">
-                  <img src="{% static product.image %}" class="responsive-img">
-                  <span class="card-title black-text">{{ product.name }}</span>
-                </div>
-                
-          </div>
-            
-            
-        </div>
-        <div class="col s12 m7 l6">
-              <ul class="collapsible" data-collapsible="expandable">
-                    <li>
-                      <div class="collapsible-header active"><h4>{{ product.name }}</h4></div>
-                      <div class="collapsible-body"><p>{{ product.description }}</p></div>
-                    </li>
-                    <li>
-                      <div class="collapsible-header"><i class="material-icons">place</i>View Parts</div>
-                      <div class="collapsible-body">
-                        <ul class="collection">
-                          {% for part in parts %}
-                          <li class="collection-item">{{part.name}}</li>
-                          {% endfor %}
-                        </ul>
-                      </div>
-                    </li>
-              </ul>
-            <div class="card-panel row">
-                
-                    <a class="btn waves-light waves-effect blue-grey lighten-1  white-text col s12 m6"><i class="material-icons medium left">attach_money</i>{{ product.price }}</a>
-                    <a href="/product/{{product.id}}/cart" class="col s12 m6 btn waves-light waves-effect blue-grey darken-1  white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
-                
+    <div class="col s12 m5 l6">
+
+        <div class="card">
+            <div class="card-image">
+            {% if product.image1 %}
+                <img src="{{ product.image1.url }}" class="responsive-img">
+            {% else %}
+                <span class="card-title black-text">{{ product.name }}</span>
+            {% endif %}
             </div>
-        </div>
-        
       </div>
+
+
+    </div>
+    <div class="col s12 m7 l6">
+          <ul class="collapsible" data-collapsible="expandable">
+                <li>
+                  <div class="collapsible-header active"><h4>{{ product.name }}</h4></div>
+                  <div class="collapsible-body"><p>{{ product.description }}</p></div>
+                </li>
+                <li>
+                {% if parts %}
+                  <div class="collapsible-header"><i class="material-icons">place</i>View Parts</div>
+                  <div class="collapsible-body">
+                    <ul class="collection">
+                      {% for part in parts %}
+                      <li class="collection-item">{{part.name}}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+                </li>
+          </ul>
+        <div class="card-panel row">
+
+                <a class="btn waves-light waves-effect blue-grey lighten-1  white-text col s12 m6"><i class="material-icons medium left">attach_money</i>{{ product.price }}</a>
+                <a href="/product/{{product.id}}/cart" class="col s12 m6 btn waves-light waves-effect blue-grey darken-1  white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
+
+        </div>
+
+        {% if product.image_urls %}
+            <div class="card-panel row">
+                    {% for img in product.image_urls %}
+                        <img class="materialboxed col s3 m2" src="{{ img }}" style="margin:5px" >
+                    {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
       
       <script> $(document).ready(function(){
     $('.collapsible').collapsible({

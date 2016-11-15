@@ -6,7 +6,7 @@ admin.site.register(ShoppingCart)
 
 @admin.register(Paintball)
 class PaintballAdmin(admin.ModelAdmin):
-    list_display = ('preview_img',)
+    list_display = ('get_preview_image',)
 
     fields = [
         'name',
@@ -19,4 +19,4 @@ class PaintballAdmin(admin.ModelAdmin):
         'image4',
         'image5',
         'image_list']
-    readonly_fields = ['image_list',]
+    readonly_fields = ['admin_image_list',]

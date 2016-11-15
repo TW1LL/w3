@@ -118,6 +118,8 @@ USE_TZ = True
 # where new uploaded media files get put and served from
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+MEDIA_URL = '/media/'
+
 # the unified location from which to serve files in production
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
@@ -125,8 +127,6 @@ STATIC_URL = '/static/'
 
 # temporary directories for serving files in development
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "account/static"),
     os.path.join(BASE_DIR, "cart/static"),
-    os.path.join(BASE_DIR, "checkout/static"),
     os.path.join(BASE_DIR, "w3/static")
     ]
