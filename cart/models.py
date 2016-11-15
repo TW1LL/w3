@@ -56,9 +56,8 @@ class Category(models.Model):
         images = []
         for img in [self.image1, self.image2, self.image3, self.image4, self.image5]:
             if img:
-                images.append(u'<a href="{0}/{1}"><img src="{0}/{2}"/></a>'.format(MEDIA_ROOT, img.url,
-                                                                                   img.url.replace(".jpg",
-                                                                                                   "_preview.jpg")))
+                images.append(u'<a href="{}"><img src="{}"/></a>'.format(
+                    img.url, img.url.replace(".jpg", "_preview.jpg")))
         if images:
             return images
         else:
