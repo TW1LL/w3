@@ -1,4 +1,4 @@
-from cart.models import ShoppingCart
+from cart.models import ShoppingCart, CartItem
 from django.core.mail import EmailMultiAlternatives
 import easypost, json, stripe
 from django.conf import settings as siteSettings
@@ -20,28 +20,28 @@ def stripeToken():
 
 
 def viewVars(request = None):
-    page = { 'title': 'w3', 'slogan': 'Swinging on a bananaaaaa' }
+    page = { 'title': 'w3', 'slogan': '' }
     
     page['nav'] = [{'link' : '/', 'title' : 'Home'}, 
                    {'link' : '/product', 'title' : 'Products' }]
     page['usernav'] = {'dropdown':[{},{}]}
-   
-   
+
     cart_count = 0
     page['user'] = None
     page['usernav']['title'] = 'Account'
     page['usernav']['dropdown'][0] = {'link': '/account/register', 'title': 'Register'}
     page['usernav']['dropdown'][1] = {'link': '/account/login', 'title': 'Login'}
     # Changes navbar items if logged in
-    if(request == None):
+    if request is None:
         pass
     else:
-        if(request.user.is_authenticated()):
+        if request.user.is_authenticated():
             page['user'] = request.user
             page['usernav']['title'] = request.user.username
             page['usernav']['dropdown'][0] = {'link': '/account', 'title': 'Account'}
             page['usernav']['dropdown'][1] = {'link': '/account/logout', 'title': 'Logout'}
-            cart_count = len(ShoppingCart.objects.filter(owner = request.user.id))
+            cart = ShoppingCart.objects.get(owner=request.user.id)
+            cart_count = cart.count_items()
         else:
             cart_count = 0
             page['user'] = None
@@ -49,8 +49,7 @@ def viewVars(request = None):
             page['usernav']['dropdown'][0] = {'link': '/account/register', 'title': 'Register'}
             page['usernav']['dropdown'][1] = {'link': '/account/login', 'title': 'Login'}
         
-    return {'page' : page, 'cart_count' : cart_count }
-
+    return {'page': page, 'cart_count': cart_count }
 
 
 class Shipment():

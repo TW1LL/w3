@@ -8,11 +8,17 @@
             <div class="card medium">
                 <div class="card-image waves-effect waves-block waves-light">
                     <img class="activator" src="{{ product.image }}" style="max-width:100%; max-height:100%; display:block; width:auto; height:auto; margin:auto;">
+                    <span class="card-title activator grey-text text-darken-4">{{ product.name }}</span>
                 </div>
                 <div class="card-content activator">
-                    <span class="card-title activator grey-text text-darken-4">{{ product.name }}<i class="material-icons right">more_vert</i></span>
                     <div class="card-action">
-                        <a href="/product/{{product.id}}/cart" class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
+                        <div>${{ product.price }}</div>
+                        <div>Available: {{ product.on_hand }}</div>
+                        {% if product.on_hand > 0 %}
+                            <a href="/product/{{ category }}/{{product.id}}/cart" class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
+                        {% else %}
+                            <div class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>None In Stock</div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="card-reveal">

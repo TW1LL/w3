@@ -8,10 +8,12 @@ urlpatterns = [
     url(r'^contact$', views.Page.contact, name='contact'),
     
     url(r'^cart$', views.Cart.cart, name='cart'),
-    url(r'^cart/qty/(?P<product>[0-9]+)/(?P<value>(\+|-)?\d+)$', views.Cart.cart_change_quantity, name='cart_change_quantity'),
+    url(r'^cart/qty/(?P<cart_item_id>[0-9]+)/(?P<value>(\+|-)?\d+)$', views.Cart.cart_change_quantity,
+        name='cart_change_quantity'),
+    url(r'^product/(?P<category>[a-zA-Z0-9]+)/(?P<product_id>[0-9]+)/cart$', views.Cart.cart_add_product,
+        name='add to cart'),
     
     url(r'^product$', views.Product.product, name='product'),
-        url(r'^product/(?P<model_name>[a-zA-Z0-9]+)$', views.Product.product, name="categories"),
-        url(r'^product/(?P<model_name>[a-zA-Z0-9]+)/(?P<product_id>[0-9]+)$', views.Product.product, name='product'),
-        url(r'^product/(?P<model_name>[a-zA-Z0-9]+)/(?P<product_id>[0-9]+)/cart$', views.Cart.cart_add_product, name='add to cart'),
+    url(r'^product/(?P<model_name>[a-zA-Z0-9]+)$', views.Product.product, name="categories"),
+    url(r'^product/(?P<model_name>[a-zA-Z0-9]+)/(?P<product_id>[0-9]+)$', views.Product.product, name='product'),
 ]

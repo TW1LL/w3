@@ -21,6 +21,7 @@ def product(request, model_name=None, product_id=None):
     else:
         model = apps.get_model('cart', model_name)
         page_vars['product'] = model.objects.get(pk=product_id)
+        page_vars['category'] = model_name
 
         # todo: get parts and images using a model.objects.get
         try:

@@ -17,20 +17,25 @@ class Category(models.Model):
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     preview_image = models.ImageField(null=True, blank=True, upload_to="uploads")
+
+    # If you make changes here, make sure to make equivalent changes to the lists in:
+    # image_urls() - seen in the store
+    # admin_image_list() and generate_img_thumbs() - seen on the admin pages
     image1 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image2 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image3 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image4 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image5 = models.ImageField(null=True, blank=True, upload_to="uploads")
 
-    image_fields = [image1, image2, image3, image4, image5]
-
+    # default image for categories, should be overriden when s
     cat_img = "cart/images/w3rect.png"
     plural_name = "Default Plural Name"
+
+    # default thumbnail size
     preview_image_size = (125, 125)
 
-    class Meta:
-        abstract = True
+    # class Meta:
+    #     abstract = True
 
     def update_on_hand(self, amount):
         self.on_hand = self.on_hand + amount
@@ -64,6 +69,7 @@ class Category(models.Model):
             return "No image"
 
     def image_urls(self):
+        # this provides images for the store page views
         images = []
         for img in [self.image1, self.image2, self.image3, self.image4, self.image5]:
             if img:
@@ -98,7 +104,6 @@ class Category(models.Model):
 
     def generate_preview_thumb(self):
         # special logic for the preview image because it's generated from image1
-        # probably duplicative and should be removed
         pil_image = Image.open(self.image1)
         pil_image = pil_image.resize(self.get_thumb_size(pil_image.size))
 
@@ -123,7 +128,6 @@ class Category(models.Model):
 
                 name = img.name.replace(".jpg", "_preview.jpg")
                 pil_image.save(os.path.join(MEDIA_ROOT, 'uploads', name), format="JPEG")
-
 
     def get_thumb_size(self, image_size):
         desired_x, desired_y = self.preview_image_size
@@ -151,7 +155,7 @@ class Part(models.Model):
 
 
 class Watch(Category):
-    # cat_img = "cart/watches/img.jpg"
+    cat_img = "cart/watches/img.jpg"
     cat_description = "Sophisticated wristpieces that hold time."
     plural_name = "Watches"
 
@@ -160,7 +164,7 @@ class Watch(Category):
 
 
 class Paintball(Category):
-    # cat_img = "cart/paintball/img.jpg"
+    cat_img = "cart/paintball/img.jpg"
     cat_description = "Sweet gats."
     plural_name = "Paintball Products"
 
@@ -170,9 +174,51 @@ class Paintball(Category):
 
 class ShoppingCart(models.Model):
     owner = models.ForeignKey('auth.user')
-    item = models.ForeignKey(Watch, null=True)
-    quantity = models.IntegerField(default=1)
     active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.owner.username + "'s item - " + str(self.quantity)
+        return self.owner.username + "'s cart"
+
+    def count_items(self):
+        count = 0
+        for item in CartItem.objects.filter(cart=self.id).all():
+            count += item.quantity
+        return count
+
+    def get_items(self):
+        return list(CartItem.objects.filter(cart=self.id).all())
+
+
+class CartItem(models.Model):
+    # a wrapper for the item class to allow tracking quantity of a given item in the cart
+    quantity = models.IntegerField(default=1)
+    cart = models.ForeignKey(ShoppingCart)
+    item = models.ForeignKey(Category)
+
+    def change_quantity(self, count=1):
+        self.quantity += count
+
+        print(self.quantity)
+        if self.quantity < 1:
+            print("deleting")
+            self.delete()
+        else:
+            self.save()
+
+    def get_price(self):
+        return self.item.price
+
+    def image(self):
+        return self.item.image()
+
+    def name(self):
+        return self.item.name
+
+    def on_hand(self):
+        return self.item.on_hand
+
+    def price(self):
+        return self.item.price
+
+    def subtotal(self):
+        return self.item.price * self.quantity

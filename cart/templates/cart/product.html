@@ -39,8 +39,11 @@
         <div class="card-panel row">
 
                 <a class="btn waves-light waves-effect blue-grey lighten-1  white-text col s12 m6"><i class="material-icons medium left">attach_money</i>{{ product.price }}</a>
-                <a href="/product/{{product.id}}/cart" class="col s12 m6 btn waves-light waves-effect blue-grey darken-1  white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
-
+                {% if product.on_hand > 0 %}
+                    <a href="/product/{{ category }}/{{product.id}}/cart" class="col s12 m6 btn waves-light waves-effect blue-grey darken-1  white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
+                {% else %}
+                    <div class="col s12 m6 btn waves-light waves-effect blue-grey darken-1  white-text"><i class="material-icons right">shopping_cart</i>None available</div>
+                {% endif %}
         </div>
 
         {% if product.image_urls %}

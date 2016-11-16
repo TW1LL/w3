@@ -2,35 +2,74 @@ from django.shortcuts import render
 from django.db.models import F
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from cart.models import Watch, ShoppingCart
+
+from cart.models import ShoppingCart, CartItem, Watch, Paintball
 from .functions import viewVars
 
 
 # Cart Views
 @login_required(login_url='/account/login')
-def cart_add_product(request, id):
-    if (ShoppingCart.objects.filter(owner=request.user.id, item = id).update(quantity = F('quantity') + 1 ) == 0):
-        ShoppingCart.objects.create(owner = request.user, item = Watch.objects.get(pk=id), quantity = 1)
+def cart_add_product(request, category, product_id):
+
+    # see if the user has a cart already, if not then create one
+    try:
+        user_cart = ShoppingCart.objects.get(owner=request.user)
+    except ShoppingCart.DoesNotExist:
+        print("does not exist")
+        user_cart = ShoppingCart.objects.create(owner=request.user)
+
+    # get the correct item for the category we're in
+    if category == 'watch':
+        user_item = Watch.objects.get(id=product_id)
+    elif category == 'paintball':
+        user_item = Paintball.objects.get(id=product_id)
+    else:
+        raise KeyError('Product category not found')
+
+    # see if the item already exists in the cart, if so just add 1 to quantity
+    # if not, add the item with quantity = 1 to the cart
+
+    cart_items = user_cart.get_items()
+
+    item_in_cart = False
+    for cart_item in cart_items:
+        if cart_item.item.id == user_item.id:
+            item_in_cart = True
+            cart_item.change_quantity(1)
+            break
+
+    if not item_in_cart:
+        CartItem.objects.create(cart=user_cart, item=user_item)
+
     return HttpResponseRedirect('/cart')
+
 
 @login_required(login_url='/account/login')
 def cart(request):
-    pageVars = viewVars(request)
-    pageVars['cart'] = ShoppingCart.objects.filter(owner = request.user.id).all()   
-    pageVars['total'] = 0
-    count = 0
-    for item in pageVars['cart']:
-        subtotal = item.item.price * item.quantity
-        pageVars['cart'][count].subtotal = subtotal
-        pageVars['total'] += subtotal
-        count += 1
-    return render(request, 'cart/cart.html', pageVars)
-        
-@login_required(login_url='/login')
-def cart_change_quantity(request,product,value):
-    ShoppingCart.objects.filter(owner = request.user.id, item = product).update(quantity = F('quantity') + value)
-    row = ShoppingCart.objects.filter(owner = request.user.id, item = product)
-    if(row[0].quantity < 1):
-        ShoppingCart.objects.filter(owner = request.user.id, item = product).delete()
-    return HttpResponseRedirect('/cart')
+    page_vars = viewVars(request)
+    user_cart = ShoppingCart.objects.get(owner=request.user.id)
+    items = user_cart.get_items()
+    user_cart.count_items()
 
+    cart_total = 0
+    cart_num_items = 0
+
+    for item in items:
+        cart_num_items += item.quantity
+        cart_total += item.get_price() * item.quantity
+
+    page_vars['total'] = cart_total
+    page_vars['item_count'] = cart_num_items
+    page_vars['cart'] = items
+
+    return render(request, 'cart/cart.html', page_vars)
+
+
+@login_required(login_url='/login')
+def cart_change_quantity(request, cart_item_id, value):
+    cart_item = CartItem.objects.get(id=cart_item_id)
+
+    int_val = int(value)
+    cart_item.change_quantity(int_val)
+
+    return HttpResponseRedirect('/cart')
