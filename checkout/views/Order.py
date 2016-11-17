@@ -1,34 +1,35 @@
-from cart.views.functions import view_vars
-from django.shortcuts import render
-from checkout.models import FinalOrder
-from account.models import UserProfile
-from django.contrib.auth.decorators import login_required
 from decimal import Decimal
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+from cart.views.functions import view_vars
+from checkout.models import Order
+
 
 @login_required(login_url='/account/login')
 def view(request, id=None):
-    pageVars = view_vars(request)
-    userprof = UserProfile.objects.get(user = request.user)
-    if id==None:
-        order = FinalOrder.objects.filter(customer = userprof).order_by('-id')[0]
-        pageVars['title'] = "Latest Order's Summary"
+    page_vars = view_vars(request)
+    if id is None:
+        order = Order.objects.filter(customer=request.user).order_by('-id')[0]
+        page_vars['title'] = "Latest Order's Summary"
     else:
-        pageVars['title'] = "Order Summary"
-        order = FinalOrder.objects.filter(id= id, customer = userprof)[0]
-    pageVars['order'] = order
-    pageVars['shipment'] = order.shipping()
-    pageVars['order'].sub = pageVars['order'].total - Decimal(pageVars['shipment']['rate'])
-    pageVars['order'].image = order.items.all()[0].image
-    return render(request, "order/viewOrder.html", pageVars)
+        page_vars['title'] = "Order Summary"
+        order = Order.objects.filter(id=id)[0]
+    page_vars['order'] = order
+    page_vars['shipment'] = order.shipping()
+    page_vars['order'].sub = page_vars['order'].total - Decimal(page_vars['shipment']['rate'])
+    page_vars['order'].image = order.items.all()[0].image
+    return render(request, "order/viewOrder.html", page_vars)
+
 
 @login_required(login_url='/account/login')
 def history(request):
-    pageVars = view_vars(request)
-    userprof = UserProfile.objects.get(user = request.user)
-    order = FinalOrder.objects.filter(customer = userprof).order_by('-id')[:12]
-    pageVars['orders'] = order
+    page_vars = view_vars(request)
+    order = Order.objects.filter(customer=request.user).order_by('-id')[:12]
+    page_vars['orders'] = order
     count = 0
-    for order in pageVars['orders']:
-        pageVars['orders'][count].image = order.items.all()[0].image
+    for order in page_vars['orders']:
+        page_vars['orders'][count].image = order.items.all()[0].image
         count += 1
-    return render(request, "order/viewHistory.html", pageVars)
+    return render(request, "order/viewHistory.html", page_vars)

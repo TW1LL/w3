@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required
-from account.models import UserProfile
 from django.contrib.auth import authenticate, login
-from account.forms import RegistrationForm, UserProfileForm
-from checkout.models import FinalOrder
-from cart.views.functions import view_vars
 from django.shortcuts import render
+
+from account.forms import RegistrationForm, UserProfileForm
+from account.models import UserProfile
+from checkout.models import Order
+from cart.views.functions import view_vars
 
 
 def register(request):
@@ -44,47 +45,58 @@ def register(request):
 # Account related views
 @login_required(login_url='/account/login')
 def account(request):
-    pageVars = view_vars(request)
+    page_vars = view_vars(request)
     info, created = UserProfile.objects.get_or_create(user=request.user)
 
-    pageVars['orders'] = FinalOrder.objects.filter(customer=info).order_by('-id')[:2]
+    page_vars['orders'] = Order.objects.filter(customer=info).order_by('-id')[:2]
     order_items = []
     count = 0
-    for order in pageVars['orders']:
-        pageVars['orders'][count].image = order.items.all()[0].image
+    for order in page_vars['orders']:
+        page_vars['orders'][count].image = order.items.all()[0].image
         count += 1
-    pageVars['info'] = {}
-    pageVars['info']['address'] = info.address.split('\n')
-    pageVars['info']['name'] = info.get_full_name()
-    return render(request, 'account/account.html', pageVars)
+    page_vars['info'] = {}
+    page_vars['info']['address'] = info.get_address.split('\n')
+    page_vars['info']['name'] = info.get_full_name()
+    return render(request, 'account/account.html', page_vars)
 
 
 @login_required(login_url='/account/login')
 def change_info(request):
-    pageVars = view_vars(request)
-    if (request.method == "POST"):
+    page_vars = view_vars(request)
+    if request.method == "POST":
         form = UserProfileForm(request.POST)
         if form.is_valid():
-            UserProfileForm.save(form)
+            shipping_form = form.save(commit=False)
+            shipping_form.user = request.user
+            shipping_form.save()
+
             info = UserProfile.objects.get(user=request.user.id)
 
-            pageVars['info'] = {}
-            pageVars['info']['address'] = info.address.split('\n')
-            pageVars['info']['name'] = info.get_full_name()
-            return render(request, 'account/account.html', pageVars)
+            page_vars['info'] = {}
+            page_vars['info']['address'] = info.get_address.split('\n')
+            page_vars['info']['name'] = info.get_full_name()
+            return render(request, 'account/account.html', page_vars)
         else:
-            pageVars['form'] = form
-            return render(request, 'account/info_change.html', pageVars)
+            page_vars['form'] = form
+            return render(request, 'account/info_change.html', page_vars)
     else:
-        userprof = UserProfile.objects.get(user=request.user.id)
-        user = userprof.get_full_name().split(' ')
-        address = userprof.address.split('\n')
+        user_profile = UserProfile.objects.get(user=request.user.id)
+        user = user_profile.get_full_name().split(' ')
+        address = user_profile.get_address.split('\n')
         if len(address) > 1:
             form = UserProfileForm(
-                initial={'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1], 'street_address': address[0],
-                         'city': address[1].split(', ')[0], 'state': address[1].split(', ')[1], 'zipcode': address[2]})
+                initial={
+                    'first_name': user[0],
+                    'last_name': user[1],
+                    'street_address': address[0],
+                    'city': address[1].split(', ')[0],
+                    'state': address[1].split(', ')[1],
+                    'zipcode': address[2]})
         else:
-            form = UserProfileForm(initial={'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1]})
-        pageVars['form'] = form
+            form = UserProfileForm(initial={
+                'first_name': user[0],
+                'last_name': user[1]
+            })
+        page_vars['form'] = form
 
-    return render(request, 'account/info_change.html', pageVars)
+    return render(request, 'account/info_change.html', page_vars)

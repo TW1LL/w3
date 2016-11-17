@@ -16,6 +16,24 @@ class Category(models.Model):
     on_hand = models.IntegerField(default=0)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
+    # important information for shipping
+    sizes = (
+        ("frenvelope", "Flat Rate Envelope (12.5 x 9.5)"),
+        ("frenvelopepad", "Flat Rate Envelope Padded (12.5 x 9.5)"),
+        ("frsmall", "Flat Rate Small Box (8.6 x 5.3 x 1.6)"),
+        ("frmedium1", 'Flat Rate Medium Box 1 (11 x 8.5 x 5.5)'),
+        ("frmedium2", 'Flat Rate Medium Box 2 (13.6 x 11.8 x 5.5)'),
+        ("frlarge", 'Flat Rate Large Box (12 x 12 x 5.5)'),
+        ("frboard", 'Flat Rate Board Game Box (23.6 x 11.75 x 3)'),
+        ("custom", 'Fill out the custom size below')
+    )
+
+    size = models.CharField(max_length=100, choices=sizes, null=False, help_text="Size listed is internal inches")
+    weight = models.IntegerField(help_text="Item's weight in oz")
+    custom_width = models.IntegerField(help_text="Exterior box size in inches", null=True, blank=True)
+    custom_height = models.IntegerField(help_text="Exterior box size in inches", null=True, blank=True)
+    custom_depth = models.IntegerField(help_text="Exterior box size in inches", null=True, blank=True)
+
     preview_image = models.ImageField(null=True, blank=True, upload_to="uploads")
 
     # If you make changes here, make sure to make equivalent changes to the lists in:
@@ -33,9 +51,6 @@ class Category(models.Model):
 
     # default thumbnail size
     preview_image_size = (125, 125)
-
-    # class Meta:
-    #     abstract = True
 
     def update_on_hand(self, amount):
         self.on_hand = self.on_hand + amount
@@ -185,6 +200,15 @@ class ShoppingCart(models.Model):
             count += item.quantity
         return count
 
+    def count_products(self):
+        return len(CartItem.objects.filter(cart=self.id).all())
+
+    def total_price(self):
+        value = 0
+        for item in CartItem.objects.filter(cart=self.id).all():
+            value += item.get_price() * item.get_quantity()
+        return value
+
     def get_cart_items(self):
         return list(CartItem.objects.filter(cart=self.id).all())
 
@@ -207,6 +231,9 @@ class CartItem(models.Model):
 
     def get_price(self):
         return self.item.price
+
+    def get_quantity(self):
+        return self.quantity
 
     def image(self):
         return self.item.image()
