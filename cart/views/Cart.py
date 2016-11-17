@@ -27,7 +27,7 @@ def cart_add_product(request, category, product_id):
     # see if the item already exists in the cart, if so just add 1 to quantity
     # if not, add the item with quantity = 1 to the cart
 
-    cart_items = user_cart.get_items()
+    cart_items = user_cart.get_cart_items()
 
     item_in_cart = False
     for cart_item in cart_items:
@@ -46,7 +46,7 @@ def cart_add_product(request, category, product_id):
 def cart(request):
     page_vars = view_vars(request)
     user_cart = ShoppingCart.objects.get(owner=request.user.id)
-    items = user_cart.get_items()
+    items = user_cart.get_cart_items()
     user_cart.count_items()
 
     cart_total = 0

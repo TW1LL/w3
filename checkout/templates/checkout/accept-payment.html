@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load humanize %}
 {% load staticfiles %}
 {% block content %}
 <div class="container">
@@ -19,8 +18,8 @@
                   </div>
               </div>
               <ul class="collection">
-                  <li class="collection-item">Subtotal: <span class="right">$ {{summary.total.sub|floatformat:2|intcomma}}</span></li>
-                  <li class="collection-item">Shipping: <span class="right">$ {{summary.total.shipping|floatformat:2|intcomma}}</span></li>
+                  <li class="collection-item">Subtotal: <span class="right">$ {{summary.total.sub|floatformat:2}}</span></li>
+                  <li class="collection-item">Shipping: <span class="right">$ {{summary.total.shipping|floatformat:2}}</span></li>
               </ul>
               {% block checkout-ship-address %}
                 <div class="card-panel">
@@ -31,7 +30,7 @@
         {% endblock %}
         </div>
         <div class="card-action">
-            <p>Total:<span class="right">$ {{summary.total.total |floatformat:2|intcomma}}</span></p>
+            <p>Total:<span class="right">$ {{summary.total.total |floatformat:2}}</span></p>
             <div class="right">
              <form action="/checkout" method="POST">
                 {% csrf_token %}

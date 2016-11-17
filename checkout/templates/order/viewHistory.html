@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load humanize %}
 {% load staticfiles %}
 {% block content %}
 <div class="container">
@@ -18,8 +17,8 @@
                             <div class="card-panel">
                                 <a href="/order/{{order.id}}">
                                 <img src="{% static order.image %}" class="responsive-img" />
-                                <p>Total: $ {{order.total|floatformat:2|intcomma}}</p>
-                                <p>ordered {{order.created|naturaltime}}</p>
+                                <p>Total: $ {{order.total|floatformat:2}}</p>
+                                <p>ordered {{order.created}}</p>
                                 </a>
                             </div>
                         </div>

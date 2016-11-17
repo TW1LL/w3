@@ -1,5 +1,4 @@
 {% extends "checkout/checkout.html" %}
-{% load humanize %}
 
 {% block checkout-content %}
 <div class="card blue-grey darken-1">
@@ -14,7 +13,7 @@
                       <div class="collapsible-body">
                         <ul class="collection">
                           {% for option in methods %}
-                          <li class="collection-item"><input name="method" type="radio" id="{{option.service}}" value="{{option.id}}"><label for="{{option.service}}">{{option.carrier}} {{option.service}} - $ {{option.rate|floatformat:2|intcomma}}</label></li>
+                          <li class="collection-item"><input name="method" type="radio" id="{{option.service}}" value="{{option.id}}"><label for="{{option.service}}">{{option.carrier}} {{option.service}} - $ {{option.rate|floatformat:2}}</label></li>
                           {% endfor %}
                         </ul>
                       </div>

@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load humanize %}
 {% load staticfiles %}
 {% block content %}
 <div class="container">
@@ -48,9 +47,9 @@
               </div>
                 
               <ul class="collection">
-                  <li class="collection-item">Subtotal: <span class="right">$ {{order.sub|floatformat:2|intcomma}}</span></li>
-                  <li class="collection-item">Shipping: <span class="right">$ {{shipment.rate|floatformat:2|intcomma}}</span></li>
-                  <li class="collection-item">Total Paid:<span class="right">$ {{order.total |floatformat:2|intcomma}}</span></li>
+                  <li class="collection-item">Subtotal: <span class="right">$ {{order.sub|floatformat:2}}</span></li>
+                  <li class="collection-item">Shipping: <span class="right">$ {{shipment.rate|floatformat:2}}</span></li>
+                  <li class="collection-item">Total Paid:<span class="right">$ {{order.total |floatformat:2}}</span></li>
               </ul>
 
           

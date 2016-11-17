@@ -185,7 +185,7 @@ class ShoppingCart(models.Model):
             count += item.quantity
         return count
 
-    def get_items(self):
+    def get_cart_items(self):
         return list(CartItem.objects.filter(cart=self.id).all())
 
 
@@ -222,3 +222,7 @@ class CartItem(models.Model):
 
     def subtotal(self):
         return self.item.price * self.quantity
+
+    def category(self):
+        print(self.item.__dict__)
+        return ''

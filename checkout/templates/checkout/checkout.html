@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load humanize %}
 
 {% block content %}
 <div class="container">
@@ -15,8 +14,8 @@
         <div class="card-content">
           <span class="card-title black-text">Summary</span>
           <ul class="collection">
-              <li class="collection-item">Subtotal: <span class="right">$ {{summary.total.sub|floatformat:2|intcomma}}</span></li>
-              <li class="collection-item">Shipping: <span class="right">$ {{summary.total.shipping|floatformat:2|intcomma}}</span></li>
+              <li class="collection-item">Subtotal: <span class="right">$ {{summary.total.sub|floatformat:2}}</span></li>
+              <li class="collection-item">Shipping: <span class="right">$ {{summary.total.shipping|floatformat:2}}</span></li>
           </ul>
           {% block checkout-ship-address %}
           
@@ -24,7 +23,7 @@
           {% endblock %}
         </div>
         <div class="card-action">
-         <p>Total:<span class="right">$ {{summary.total.total |floatformat:2|intcomma}}</span></p>
+         <p>Total:<span class="right">$ {{summary.total.total |floatformat:2}}</span></p>
         </div>
       </div>
       

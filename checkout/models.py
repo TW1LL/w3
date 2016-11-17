@@ -27,13 +27,13 @@ class Order(models.Model):
     def info(self):
         total = {'sub': 0, 'shipping': 0, 'total': 0}
         purchase = {'total_qty': 0}
-        items = self.cart.all()
+        items = self.cart.get().get_cart_items()
         count = 0
         # Get total of things in the cart.
-        for product in items:
+        for cart_item in items:
             count += 1
-            total['sub'] += product.quantity * product.item.price
-            purchase['total_qty'] += product.quantity
+            total['sub'] += cart_item.quantity * cart_item.item.price
+            purchase['total_qty'] += cart_item.quantity
 
         # Add shipping cost
         purchase['qty'] = count
