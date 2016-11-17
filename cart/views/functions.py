@@ -20,17 +20,21 @@ def stripeToken():
 
 
 def viewVars(request = None):
-    page = { 'title': 'w3', 'slogan': '' }
-    
-    page['nav'] = [{'link' : '/', 'title' : 'Home'}, 
-                   {'link' : '/product', 'title' : 'Products' }]
-    page['usernav'] = {'dropdown':[{},{}]}
+    page = {
+        'title': 'w3',
+        'slogan': '',
+        ['nav']: [{'link': '/', 'title': 'Home'},
+                   {'link': '/product', 'title': 'Products'}],
+        ['usernav']: {
+            'dropdown': [{'link': '/account/register', 'title': 'Register'},
+                         {'link': '/account/login', 'title': 'Login'}],
+            ['title']: 'Account'
+        },
+        ['user']: None
+    }
 
     cart_count = 0
-    page['user'] = None
-    page['usernav']['title'] = 'Account'
-    page['usernav']['dropdown'][0] = {'link': '/account/register', 'title': 'Register'}
-    page['usernav']['dropdown'][1] = {'link': '/account/login', 'title': 'Login'}
+
     # Changes navbar items if logged in
     if request is None:
         pass
@@ -40,7 +44,10 @@ def viewVars(request = None):
             page['usernav']['title'] = request.user.username
             page['usernav']['dropdown'][0] = {'link': '/account', 'title': 'Account'}
             page['usernav']['dropdown'][1] = {'link': '/account/logout', 'title': 'Logout'}
-            cart = ShoppingCart.objects.get(owner=request.user.id)
+            try:
+                cart = ShoppingCart.objects.get(owner=request.user.id)
+            except ShoppingCart.DoesNotExist:
+                cart = ShoppingCart.objects.create(owner=request.user)
             cart_count = cart.count_items()
         else:
             cart_count = 0
@@ -52,8 +59,7 @@ def viewVars(request = None):
     return {'page': page, 'cart_count': cart_count }
 
 
-class Shipment():
-
+class Shipment:
     def create_shipment(self, address):
 
         self.fromAddress = easypost.Address.create(

@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.db.models import F
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 
@@ -15,7 +14,6 @@ def cart_add_product(request, category, product_id):
     try:
         user_cart = ShoppingCart.objects.get(owner=request.user)
     except ShoppingCart.DoesNotExist:
-        print("does not exist")
         user_cart = ShoppingCart.objects.create(owner=request.user)
 
     # get the correct item for the category we're in
