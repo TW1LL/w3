@@ -3,7 +3,7 @@ from account.models import UserProfile
 from django.contrib.auth import authenticate, login
 from account.forms import RegistrationForm, UserProfileForm
 from checkout.models import FinalOrder
-from cart.views.functions import viewVars
+from cart.views.functions import view_vars
 from django.shortcuts import render
 
 
@@ -19,24 +19,24 @@ def register(request):
                 if user.is_active:
                     # Login
                     login(request, user)
-                    pageVars = viewVars(request)
+                    pageVars = view_vars(request)
                     return render(request, 'account/account.html', pageVars)
                 else:
                     # User not enabled
-                    pageVars = viewVars(request)
+                    pageVars = view_vars(request)
                     return render(request, 'error/custom.html', {'error': 'User is disabled.'})
             else:
                 # Login failed
-                pageVars = viewVars(request)
+                pageVars = view_vars(request)
                 return render(request, 'error/custom.html', {'error': 'User authentication failed.'})
         else:
             # Form not valid
-            pageVars = viewVars(request)
+            pageVars = view_vars(request)
             pageVars['form'] = form
             return render(request, 'account/registration.html', pageVars)
     else:
         # Show registration form
-        pageVars = viewVars(request)
+        pageVars = view_vars(request)
         pageVars['form'] = RegistrationForm()
         return render(request, 'account/registration.html', pageVars)
 
@@ -44,7 +44,7 @@ def register(request):
 # Account related views
 @login_required(login_url='/account/login')
 def account(request):
-    pageVars = viewVars(request)
+    pageVars = view_vars(request)
     info, created = UserProfile.objects.get_or_create(user=request.user)
 
     pageVars['orders'] = FinalOrder.objects.filter(customer=info).order_by('-id')[:2]
@@ -61,7 +61,7 @@ def account(request):
 
 @login_required(login_url='/account/login')
 def change_info(request):
-    pageVars = viewVars(request)
+    pageVars = view_vars(request)
     if (request.method == "POST"):
         form = UserProfileForm(request.POST)
         if form.is_valid():

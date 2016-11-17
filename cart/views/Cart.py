@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 
 from cart.models import ShoppingCart, CartItem, Watch, Paintball
-from .functions import viewVars
+from .functions import view_vars
 
 
 # Cart Views
@@ -44,7 +44,7 @@ def cart_add_product(request, category, product_id):
 
 @login_required(login_url='/account/login')
 def cart(request):
-    page_vars = viewVars(request)
+    page_vars = view_vars(request)
     user_cart = ShoppingCart.objects.get(owner=request.user.id)
     items = user_cart.get_items()
     user_cart.count_items()

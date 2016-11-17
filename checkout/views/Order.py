@@ -1,4 +1,4 @@
-from cart.views.functions import viewVars
+from cart.views.functions import view_vars
 from django.shortcuts import render
 from checkout.models import FinalOrder
 from account.models import UserProfile
@@ -7,7 +7,7 @@ from decimal import Decimal
 
 @login_required(login_url='/account/login')
 def view(request, id=None):
-    pageVars = viewVars(request)
+    pageVars = view_vars(request)
     userprof = UserProfile.objects.get(user = request.user)
     if id==None:
         order = FinalOrder.objects.filter(customer = userprof).order_by('-id')[0]
@@ -23,7 +23,7 @@ def view(request, id=None):
 
 @login_required(login_url='/account/login')
 def history(request):
-    pageVars = viewVars(request)
+    pageVars = view_vars(request)
     userprof = UserProfile.objects.get(user = request.user)
     order = FinalOrder.objects.filter(customer = userprof).order_by('-id')[:12]
     pageVars['orders'] = order

@@ -3,7 +3,7 @@ from decimal import Decimal
 from cart.models import ShoppingCart
 from checkout.models import Order, FinalOrder
 from account.models import UserProfile
-from cart.views.functions import viewVars, ezpost, send_email, stripeToken
+from cart.views.functions import view_vars, ezpost, send_email, stripe_token
 from django.shortcuts import render
 from account.forms import UserProfileForm
 from django.http import HttpResponseRedirect
@@ -48,7 +48,7 @@ def shipping(request, userprof, order):
             Order.objects.filter(customer = userprof, status__startswith = "CRE").update(status = "CRESHIP")
             return HttpResponseRedirect('/checkout')
         else:
-            pageVars = viewVars(request)
+            pageVars = view_vars(request)
             pageVars['form'] = form
             return render(request, 'checkout/shipping.html', pageVars)
     else:
@@ -61,7 +61,7 @@ def shipping(request, userprof, order):
                 form = UserProfileForm(initial = { 'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1], 'street_address': address[0], 'city': address[1].split(', ')[0], 'state': address[1].split(', ')[1], 'zipcode': address[2]})
             else:
                 form = UserProfileForm(initial = { 'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1]})
-        pageVars = viewVars(request)
+        pageVars = view_vars(request)
         pageVars['form'] = form
         pageVars['summary'] = order.info()
         return render(request, "checkout/shipping.html", pageVars)
@@ -82,7 +82,7 @@ def shipping_create(request, userprof):
                     form = UserProfileForm(initial = { 'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1], 'street_address': address[0], 'city': address[1].split(', ')[0], 'state': address[1].split(', ')[1], 'zipcode': address[2]})
                 else:
                     form = UserProfileForm(initial = { 'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1]})
-            pageVars = viewVars(request)
+            pageVars = view_vars(request)
             pageVars['form'] = form
             pageVars['summary'] = order.info()
             
@@ -91,7 +91,7 @@ def shipping_create(request, userprof):
     
   
 def shipping_method(request, userprof, order):
-    pageVars = viewVars(request)
+    pageVars = view_vars(request)
     print(request.POST)
     if(request.method == "POST" and 'method' in request.POST):
         rates = ezpost.view_rates()
@@ -112,14 +112,14 @@ def payment(request, userprof, order):
     if request.POST:
         token = request.POST['stripeToken']
         Order.objects.filter(customer = userprof, status__startswith = "CRE").update(status = "CREPAID", payment = token)
-        pageVars = viewVars(request)
+        pageVars = view_vars(request)
         pageVars['summary'] = summary
         pageVars['token'] = token
         return render(request, "checkout/confirmation.html", pageVars)
     else:
-        pageVars = viewVars(request)
+        pageVars = view_vars(request)
         summary['image'] = '/static/cart/images/cross-sect.jpg'
-        pageVars['stripe'] = stripeToken()
+        pageVars['stripe'] = stripe_token()
         pageVars['summary'] = summary
         return render(request, "checkout/accept-payment.html", pageVars)
         
@@ -162,7 +162,7 @@ def confirmation(request, userprof, order):
             send_email(email)
             return HttpResponseRedirect("/order")
     else:
-        page_vars = viewVars(request)
+        page_vars = view_vars(request)
         page_vars['summary'] = summary
         page_vars['token'] = order.payment
         return render(request, "checkout/confirmation.html", page_vars)

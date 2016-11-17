@@ -1,5 +1,5 @@
 from cart.models import Category
-from cart.views.functions import viewVars
+from cart.views.functions import view_vars
 from django.shortcuts import render
 from django.apps import apps
 
@@ -7,7 +7,7 @@ from django.apps import apps
 #Product related views
 def product(request, model_name=None, product_id=None):
 
-    page_vars = viewVars(request)
+    page_vars = view_vars(request)
 
     if model_name is None:
         models = Category.get_categories()

@@ -1,36 +1,35 @@
 from cart.models import ShoppingCart, CartItem
 from django.core.mail import EmailMultiAlternatives
 import easypost, json, stripe
-from django.conf import settings as siteSettings
+from w3 import settings
 
-if siteSettings.DEBUG == True:
+if settings.DEBUG == True:
     easypost.api_key = 'PtuiK6fa0pnWTL9cVMbT4A'
     stripe.api_key = 'sk_test_rkjc0dbKQXNuxKL8Vv3ufwBl'
-
 else:
     easypost.api_key = '9bu7oUwgGAhvXJbG6IvqPQ'
     stripe.api_key = 'sk_live_Hic99hSOWFmRHzeuCgOiXvIS'
 
 
-def stripeToken():
-    if siteSettings.DEBUG is True:
+def stripe_token():
+    if settings.DEBUG is True:
         return 'pk_test_zYPD04M9BfHgurntkeskiIRr'
     else:
         return 'pk_live_RcuDbpBGm72ekMijPkNHr4xO'
 
 
-def viewVars(request = None):
+def view_vars(request = None):
     page = {
         'title': 'w3',
         'slogan': '',
-        ['nav']: [{'link': '/', 'title': 'Home'},
+        'nav': [{'link': '/', 'title': 'Home'},
                    {'link': '/product', 'title': 'Products'}],
-        ['usernav']: {
+        'usernav': {
             'dropdown': [{'link': '/account/register', 'title': 'Register'},
                          {'link': '/account/login', 'title': 'Login'}],
-            ['title']: 'Account'
+            'title': 'Account'
         },
-        ['user']: None
+        'user': None
     }
 
     cart_count = 0
@@ -74,7 +73,7 @@ class Shipment:
             predefined_package = 'SmallFlatRateBox',
             weight = 10
         )
-        if address != None:
+        if address is not None:
             self.toAddress = easypost.Address.create(name= address[0],company= address[1],street1 = address[2], city = address[3], state = address[4], zip = address[5])
             self.shipment = easypost.Shipment.create(to_address = self.toAddress, from_address = self.fromAddress, parcel = self.parcel)
 
