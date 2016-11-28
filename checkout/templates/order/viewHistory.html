@@ -16,9 +16,9 @@
                         <div class="col m3 s12">
                             <div class="card-panel">
                                 <a href="/order/{{order.id}}">
-                                <img src="{% static order.image %}" class="responsive-img" />
+                                <img src="{{ order.image }}" class="responsive-img" />
                                 <p>Total: $ {{order.total|floatformat:2}}</p>
-                                <p>ordered {{order.created}}</p>
+                                <p>Ordered {{order.created}}</p>
                                 </a>
                             </div>
                         </div>
@@ -28,10 +28,6 @@
             </div>
 
           
-        </div>
-        <div class="card-action">
-            <p>Showing latest 12 orders. </p>
-
         </div>
       </div>
       

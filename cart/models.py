@@ -216,7 +216,7 @@ class ShoppingCart(models.Model):
     def count_products(self):
         return len(CartItem.objects.filter(cart=self.id).all())
 
-    def total_price(self):
+    def total_item_price(self):
         value = 0
         for item in CartItem.objects.filter(cart=self.id).all():
             value += item.get_price() * item.get_quantity()

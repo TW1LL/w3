@@ -43,7 +43,7 @@ class Order(models.Model):
     date_modified = models.DateTimeField()
 
     finalized = models.BooleanField(default=False)
-    date_finalized = models.DateTimeField(null=True)
+    date_finalized = models.DateTimeField(null=True, blank=True)
 
     items = models.ManyToManyField(CartItem)
     desc = models.CharField(max_length=255, default="1 Order")
@@ -66,14 +66,18 @@ class Order(models.Model):
         """
         cart = ShoppingCart.objects.get(id=self.cart_id)
         items = cart.get_cart_items()
-        item_cost = cart.total_price()
+        item_cost = cart.total_item_price()
         shipping_cost = self.get_shipping_cost()
+        total_cost = item_cost + shipping_cost
+
+        self.total = total_cost
+        self.save()
 
         total = {
             'sub': item_cost,
             'shipping': shipping_cost,
-            'total': item_cost + shipping_cost,
-            'card': (item_cost + shipping_cost) * 100
+            'total': total_cost,
+            'card': total_cost * 100 # in cents for stripe
         }
 
         purchase = {
@@ -106,7 +110,11 @@ class Order(models.Model):
         return address
 
     def get_items(self):
-        return ShoppingCart.objects.get(id=self.cart_id).all()
+        if self.cart:
+            return CartItem.objects.filter(cart=self.cart_id)
+        else:
+            return self.items.select_related()
+
 
     def get_shipment(self):
         try:

@@ -10,7 +10,7 @@ from cart.views.functions import view_vars
 
 def register(request):
     # Check if submitting form
-    if (request.method == "POST"):
+    if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
             # Create user, then authenticate
@@ -46,17 +46,23 @@ def register(request):
 @login_required(login_url='/account/login')
 def account(request):
     page_vars = view_vars(request)
-    info, created = CustomerProfile.objects.get_or_create(user=request.user)
+    customer_profile, created = CustomerProfile.objects.get_or_create(customer=request.user)
 
-    page_vars['orders'] = Order.objects.filter(customer=info).order_by('-id')[:2]
-    order_items = []
+    page_vars['orders'] = Order.objects.filter(customer=request.user).order_by('-id')[:2]
     count = 0
     for order in page_vars['orders']:
-        page_vars['orders'][count].image = order.get_items.all()[0].image
+        page_vars['orders'][count].image = order.get_items()[0].item.preview_image.url
+        page_vars['orders'][count].total = order.total
+        page_vars['orders'][count].created = order.date_created
         count += 1
     page_vars['info'] = {}
-    page_vars['info']['address'] = info.get_address.split('\n')
-    page_vars['info']['name'] = info.get_full_name()
+    try:
+        page_vars['info']['address'] = customer_profile.address.format_for_display()
+    except AttributeError:
+        # address not created yet
+        page_vars['info']['address'] = "No address provided"
+
+    page_vars['info']['name'] = customer_profile.get_full_name()
     return render(request, 'account/account.html', page_vars)
 
 
@@ -80,18 +86,29 @@ def change_info(request):
             page_vars['form'] = form
             return render(request, 'account/info_change.html', page_vars)
     else:
-        user_profile = CustomerProfile.objects.get(user=request.user.id)
+        user_profile = CustomerProfile.objects.get(customer=request.user.id)
         user = user_profile.get_full_name().split(' ')
-        address = user_profile.get_address.split('\n')
-        if len(address) > 1:
+        try:
+            address = user_profile.address.format_for_display()
+        except AttributeError:
+            # no valid address
+            address = None
+
+        if address is not None:
             form = UserProfileForm(
                 initial={
-                    'first_name': user[0],
-                    'last_name': user[1],
-                    'street_address': address[0],
-                    'city': address[1].split(', ')[0],
-                    'state': address[1].split(', ')[1],
-                    'zipcode': address[2]})
+                    'first_name': address.first_name,
+                    'last_name': address.last_name,
+                    'company_name': address.company_name,
+                    'street_address1': address.street_address1,
+                    'street_address2': address.street_address2,
+                    'city': address.city,
+                    'state': address.state,
+                    'zipcode': address.zipcode,
+                    'country': address.country,
+                    'phone': address.phone,
+                    'email': address.email
+                })
         else:
             form = UserProfileForm(initial={
                 'first_name': user[0],

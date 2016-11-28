@@ -6,7 +6,7 @@
         <p>There was an error processing your login.</p>
     {% endif %}
     
-    <form method="post" action="{% url django.contrib.auth.views.login %}" class="col s12">
+    <form method="post" action="{% url 'login' %}" class="col s12">
         {% csrf_token %}
         <div class="row">
             <div class="input-field col s12">

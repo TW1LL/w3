@@ -26,6 +26,7 @@ urlpatterns = [
         url(r'^change_info$', Account.change_info, name='change_info'),
 
 
-        url(r'^login$', views.login, {'template_name': 'account/login.html', 'extra_context': view_vars()}),
+        url(r'^login/$', views.login, {'template_name': 'account/login.html', 'extra_context': view_vars()},
+            name="login"),
         url(r'^logout$', views.logout_then_login, {'login_url': '/account/login', 'extra_context': view_vars()}),
 ]

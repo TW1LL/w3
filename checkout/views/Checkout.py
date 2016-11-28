@@ -38,7 +38,7 @@ def shipment(request):
     elif order_status == Order.STATUS_CHOICES['Shipping Chosen']:
         return payment(request, order)
     elif order_status in (Order.STATUS_CHOICES['Ready to Ship'], Order.STATUS_CHOICES['Shipped']):
-        return confirmation(request, user_profile, order)
+        return confirmation(request, order)
     else:
         raise Exception("Unable to handle order status.")
 
@@ -193,47 +193,12 @@ def payment(request, order):
         return render(request, "checkout/accept-payment.html", page_vars)
         
 
-def confirmation(request, user_profile, order):
+def confirmation(request, order):
     summary = order.purchase_info()
-    
-    if request.POST:
-        
-        token = request.POST['stripeToken']
-        try:
-           charge = stripe.Charge.create(
-                amount=int(summary['total']['card']),  # amount in cents, again
-                currency="usd",
-                source=token,
-                description=summary['desc']
-            )
-        except stripe.error.CardError as e:
-            return HttpResponseRedirect('/checkout')
-        valid, final = finalize_order(user_profile, order, token, summary)
-        if valid:
-            order = Order.objects.filter(customer=user_profile, status__startswith="CRE").update(status="CHEKOUT")
-            ShoppingCart.objects.filter(customer=request.user).delete()
-            
-            email = {
-                'subject': 'Order Confirmation for ' + summary['desc'],
-                'from': 'wcubedcompany@gmail.com',
-                'to': user_profile.user.email,
-                }
-            text = get_template('email/confirmation_email.txt')
-            htmlt = get_template('email/confirmation_email.html')
-            final.sub = final.total - Decimal(final.get_shipment()['rate'])
-            d = Context({ 'order': final, 'shipping': final.get_shipment()
-                
-                })
-            email['text'] = text.render(d)
-            email['html'] = htmlt.render(d)
-
-            send_email(email)
-            return HttpResponseRedirect("/order")
-    else:
-        page_vars = view_vars(request)
-        page_vars['summary'] = summary
-        page_vars['token'] = order.payment
-        return render(request, "checkout/confirmation.html", page_vars)
+    page_vars = view_vars(request)
+    page_vars['summary'] = summary
+    page_vars['token'] = order.payment
+    return render(request, "checkout/confirmation.html", page_vars)
 
 
 def create_order(user):
@@ -245,12 +210,3 @@ def create_order(user):
                                  date_modified=datetime.now()
                                  )
     return order
-
-
-def finalize_order(user_profile, order, payment, info):
-    # ship = ezpost.buy(order.shipping_object)
-
-    # get the order
-    # modify it so it's finalized and has a finalized time
-    # do whatever other shit needs to happen
-    return True
