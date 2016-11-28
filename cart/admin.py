@@ -12,7 +12,7 @@ class PaintballAdmin(admin.ModelAdmin):
     fields = [
         'name',
         'description',
-        'size',
+        'packaging',
         ('custom_width', 'custom_height', 'custom_depth'),
         'weight',
         'on_hand',

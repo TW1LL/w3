@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from localflavor.us.forms import USStateField, USZipCodeField, USPhoneNumberField
 
-from account.models import UserProfile, Address
+from account.models import CustomerProfile, Address
 from cart.models import ShoppingCart
 from checkout.models import Order
 
@@ -60,12 +60,12 @@ class UserProfileForm(forms.Form):
     email = forms.CharField(label="Email", widget=forms.TextInput)
 
     class Meta:
-        model = UserProfile
-        exclude = ['user']
+        model = CustomerProfile
+        exclude = ["customer"]
 
     def save(self):
-        user_profile = UserProfile.objects.get(id=self.user)
-        user_cart = ShoppingCart.objects.get(id=self.user)
+        user_profile = CustomerProfile.objects.get(id=self.user)
+        user_cart = ShoppingCart.objects.get(customer=self.user)
         order = Order.objects.get(cart=user_cart)
 
         address_is_new = False
@@ -82,10 +82,12 @@ class UserProfileForm(forms.Form):
 
         if address_is_new:
             # make sure the old address isn't pulled as most recent
-            user_profile.address.most_current = False
+            if user_profile.address:
+                user_profile.address.most_current = False
+                user_profile.address.save()
 
             address = Address.objects.create(
-                user=User.objects.get(id=self.user),
+                customer=User.objects.get(id=self.user),
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name'],
                 company_name=self.cleaned_data["company_name"],
@@ -106,5 +108,5 @@ class UserProfileForm(forms.Form):
             user_profile.address = address
             user_profile.save()
 
-            User.objects.filter(pk=user_profile.user_id).update(first_name=self.cleaned_data['first_name'],
-                                                                last_name=self.cleaned_data['last_name'])
+            User.objects.filter(pk=user_profile.customer_id).update(first_name=self.cleaned_data['first_name'],
+                                                                    last_name=self.cleaned_data['last_name'])

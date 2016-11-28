@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render
 
 from account.forms import RegistrationForm, UserProfileForm
-from account.models import UserProfile
+from account.models import CustomerProfile
 from checkout.models import Order
 from cart.views.functions import view_vars
 
@@ -46,7 +46,7 @@ def register(request):
 @login_required(login_url='/account/login')
 def account(request):
     page_vars = view_vars(request)
-    info, created = UserProfile.objects.get_or_create(user=request.user)
+    info, created = CustomerProfile.objects.get_or_create(user=request.user)
 
     page_vars['orders'] = Order.objects.filter(customer=info).order_by('-id')[:2]
     order_items = []
@@ -70,7 +70,7 @@ def change_info(request):
             shipping_form.user = request.user
             shipping_form.save()
 
-            info = UserProfile.objects.get(user=request.user.id)
+            info = CustomerProfile.objects.get(user=request.user.id)
 
             page_vars['info'] = {}
             page_vars['info']['address'] = info.get_address.split('\n')
@@ -80,7 +80,7 @@ def change_info(request):
             page_vars['form'] = form
             return render(request, 'account/info_change.html', page_vars)
     else:
-        user_profile = UserProfile.objects.get(user=request.user.id)
+        user_profile = CustomerProfile.objects.get(user=request.user.id)
         user = user_profile.get_full_name().split(' ')
         address = user_profile.get_address.split('\n')
         if len(address) > 1:

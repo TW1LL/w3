@@ -10,6 +10,16 @@ from PIL import Image
 
 
 class Category(models.Model):
+    # ToDo: Refactor out the "plural_name" attribute - use .__meta__.plural_name
+    """
+    Base class for all item categories in the store.
+    To implement a subclass, you should make sure you override the following attributes:
+    category_name
+    cat_img
+    plural_name
+    """
+
+    category_name = "Category"
 
     name = models.CharField(max_length=255, default="New Product")
     description = models.TextField(default="Mechanical designs by w^3")
@@ -18,17 +28,17 @@ class Category(models.Model):
 
     # important information for shipping
     sizes = (
-        ("frenvelope", "Flat Rate Envelope (12.5 x 9.5)"),
-        ("frenvelopepad", "Flat Rate Envelope Padded (12.5 x 9.5)"),
-        ("frsmall", "Flat Rate Small Box (8.6 x 5.3 x 1.6)"),
-        ("frmedium1", 'Flat Rate Medium Box 1 (11 x 8.5 x 5.5)'),
-        ("frmedium2", 'Flat Rate Medium Box 2 (13.6 x 11.8 x 5.5)'),
-        ("frlarge", 'Flat Rate Large Box (12 x 12 x 5.5)'),
-        ("frboard", 'Flat Rate Board Game Box (23.6 x 11.75 x 3)'),
+        ("FlatRateEnvelope", "Flat Rate Envelope (12.5 x 9.5)"),
+        ("FlatRatePaddedEnvelope", "Flat Rate Envelope Padded (12.5 x 9.5)"),
+        ("SmallFlatRateBox", "Flat Rate Small Box (8.6 x 5.3 x 1.6)"),
+        ("MediumFlatRateBox1", 'Flat Rate Medium Box 1 (11 x 8.5 x 5.5)'),
+        ("MediumFlatRateBox2", 'Flat Rate Medium Box 2 (13.6 x 11.8 x 5.5)'),
+        ("LargeFlatRateBox", 'Flat Rate Large Box (12 x 12 x 5.5)'),
+        ("LargeFlatRateBoardGameBox", 'Flat Rate Board Game Box (23.6 x 11.75 x 3)'),
         ("custom", 'Fill out the custom size below')
     )
 
-    size = models.CharField(max_length=100, choices=sizes, null=False, help_text="Size listed is internal inches")
+    packaging = models.CharField(max_length=100, choices=sizes, null=False, help_text="Size listed is internal inches")
     weight = models.IntegerField(help_text="Item's weight in oz")
     custom_width = models.IntegerField(help_text="Exterior box size in inches", null=True, blank=True)
     custom_height = models.IntegerField(help_text="Exterior box size in inches", null=True, blank=True)
@@ -45,7 +55,7 @@ class Category(models.Model):
     image4 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image5 = models.ImageField(null=True, blank=True, upload_to="uploads")
 
-    # default image for categories, should be overriden when s
+    # default image for categories, should be overridden when subclassing
     cat_img = "cart/images/w3rect.png"
     plural_name = "Default Plural Name"
 
@@ -175,7 +185,8 @@ class Watch(Category):
     plural_name = "Watches"
 
     class Meta:
-        verbose_name = "Watch Product"
+        verbose_name = "Watch"
+        verbose_name_plural = "Watches"
 
 
 class Paintball(Category):
@@ -184,15 +195,16 @@ class Paintball(Category):
     plural_name = "Paintball Products"
 
     class Meta:
-        verbose_name = "Paintball Product"
+        verbose_name = "Paintball"
+        verbose_name_plural = "Paintball Products"
 
 
 class ShoppingCart(models.Model):
-    owner = models.ForeignKey('auth.user')
+    customer = models.ForeignKey('auth.user')
     active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.owner.username + "'s cart"
+        return self.customer.username + "'s cart"
 
     def count_items(self):
         count = 0

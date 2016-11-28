@@ -12,9 +12,9 @@ def cart_add_product(request, category, product_id):
 
     # see if the user has a cart already, if not then create one
     try:
-        user_cart = ShoppingCart.objects.get(owner=request.user)
+        user_cart = ShoppingCart.objects.get(customer=request.user)
     except ShoppingCart.DoesNotExist:
-        user_cart = ShoppingCart.objects.create(owner=request.user)
+        user_cart = ShoppingCart.objects.create(customer=request.user)
 
     # get the correct item for the category we're in
     if category == 'watch':
@@ -45,7 +45,7 @@ def cart_add_product(request, category, product_id):
 @login_required(login_url='/account/login')
 def cart(request):
     page_vars = view_vars(request)
-    user_cart = ShoppingCart.objects.get(owner=request.user.id)
+    user_cart = ShoppingCart.objects.get(customer=request.user.id)
     items = user_cart.get_cart_items()
     user_cart.count_items()
 

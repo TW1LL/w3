@@ -1,5 +1,4 @@
 import stripe
-import easypost
 from decimal import Decimal
 from datetime import datetime
 
@@ -10,36 +9,38 @@ from django.template.loader import get_template
 from django.template import Context
 
 from account.forms import UserProfileForm
-from account.models import UserProfile
+from account.models import CustomerProfile
 from cart.models import ShoppingCart
-from cart.views.functions import view_vars, ezpost, send_email, stripe_token
-from checkout.models import Order
+from cart.views.functions import view_vars, send_email, stripe_token
+from checkout.models import Order, Shipment
 
 
 @login_required(login_url='/account/login')
 def shipment(request):
-    cart = ShoppingCart.objects.get(owner=request.user.id)
+    cart = ShoppingCart.objects.get(customer=request.user.id)
 
     # if there's nothing in their cart, send them back to their cart
     if cart.count_items() < 1:
         return HttpResponseRedirect('/cart')
 
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    user_profile, created = CustomerProfile.objects.get_or_create(customer=request.user)
     try:
         order = Order.objects.get(customer=request.user, cart=cart)
     except Order.DoesNotExist:
         return shipping_create(request, user_profile)
 
-    if order.status() == Order.STATUS_CHOICES['Created']:
+    order_status = order.status()
+
+    if order_status == Order.STATUS_CHOICES['Created']:
         return address(request, user_profile, order)
-    elif order.status() == Order.STATUS_CHOICES['Addressed']:
+    elif order_status == Order.STATUS_CHOICES['Addressed']:
         return shipping_method(request, user_profile, order)
-    elif order.status() == Order.STATUS_CHOICES['Shipping Chosen']:
+    elif order_status == Order.STATUS_CHOICES['Shipping Chosen']:
         return payment(request, user_profile, order)
-    elif order.status() == Order.STATUS_CHOICES['Ready to Ship']:
+    elif order_status == [Order.STATUS_CHOICES['Ready to Ship'], Order.STATUS_CHOICES['Shipped']]:
         return confirmation(request, user_profile, order)
     else:
-        return HttpResponseRedirect('/account')
+        raise Exception("Unable to handle order status.")
 
 
 def address(request, user_profile, order):
@@ -79,61 +80,88 @@ def address(request, user_profile, order):
 
         page_vars = view_vars(request)
         page_vars['form'] = form
-        page_vars['summary'] = order.info()
+        page_vars['summary'] = order.purchase_info()
         return render(request, "checkout/shipping.html", page_vars)
 
   
-def shipping_create(request, userprof):
+def shipping_create(request, user_profile):
         order = create_order(request.user)
         if order is False:
             return HttpResponseRedirect("/account")
         else:
-            order = Order.objects.filter(customer=request.user, status__startswith = "CRE")[0]
-            user = userprof.get_full_name().split(' ')
-            if userprof.get_address is None:
-                form = UserProfileForm(initial = { 'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1] })
+            order = Order.objects.filter(customer=request.user, finalized=False)[0]
+            user = user_profile.get_full_name().split(' ')
+            if user_profile.address is None:
+                form = UserProfileForm(initial={
+                    'first_name': user[0],
+                    'last_name': user[1]
+                })
             else:
-                address = userprof.get_address.split('\n')
-                if len(address) > 1:
-                    form = UserProfileForm(initial = {
-                        'pk': userprof.pk,
-                        'first_name': user[0],
-                        'last_name': user[1],
-                        'street_address': address[0],
-                        'city': address[1].split(', ')[0],
-                        'state': address[1].split(', ')[1],
-                        'zipcode': address[2]
+                current_address = user_profile.address
+                if len(current_address) > 1:
+                    form = UserProfileForm(initial={
+                        'first_name': current_address.first_name,
+                        'last_name': current_address.last_name,
+                        'street_address': current_address.street_address,
+                        'city': current_address.city,
+                        'state': current_address.state,
+                        'zipcode': current_address.zipcode
                     })
                 else:
-                    form = UserProfileForm(initial = { 'pk': userprof.pk, 'first_name': user[0], 'last_name': user[1]})
+                    form = UserProfileForm(initial={
+                        'first_name': user[0],
+                        'last_name': user[1]
+                    })
             page_vars = view_vars(request)
             page_vars['form'] = form
-            page_vars['summary'] = order.info()
+            page_vars['summary'] = order.purchase_info()
             
             return render(request, "checkout/shipping.html", page_vars)
 
   
-def shipping_method(request, userprof, order):
+def shipping_method(request, user_profile, order):
     page_vars = view_vars(request)
-    if request.method == "POST" and 'method' in request.POST:
-        rates = ezpost.view_rates()
-        for i in rates:
-            if i.id == request.POST['method']:
-                rate = i
-        Order.objects.filter(customer=userprof).update(shipping_object=rate)
+    current_order = Order.objects.get(customer=request.user, finalized=False)
+    try:
+        new_shipment = Shipment.objects.get(order=current_order)
+    except Shipment.DoesNotExist:
+        new_shipment = Shipment.objects.create(order=current_order)
+
+    # Customer is POSTing the form
+    if request.method == "POST" and request.POST:
+        chosen_rates = get_choice_rate_ids(request.POST)
+
+        final_rates = {}
+        shipments = new_shipment.get_shipments()
+
+        for item_id in shipments:
+            item_shipment = shipments[item_id]
+            for rate in item_shipment.rates:
+                if rate.id in chosen_rates:
+                    final_rates[item_id] = rate
+                    break
+        new_shipment.save_shipments(final_rates)
+        new_shipment.set_total_cost()
         return HttpResponseRedirect('/checkout')
     else:
-        ezpost.create_shipment(order.get_address())
-        page_vars['methods'] = ezpost.view_rates()
-        page_vars['summary'] = order.info()
+        new_shipment.create_shipments()
+        page_vars['shipping_rates'] = new_shipment.view_rates()
+        page_vars['summary'] = order.purchase_info()
         return render(request, 'checkout/shipping-method.html', page_vars)
 
 
-def payment(request, userprof, order):
-    summary = order.info()
+def get_choice_rate_ids(post):
+    chosen_rates = []
+    for val in post:
+        if 'rate_option' in val:
+            chosen_rates.append(post[val])
+    return chosen_rates
+
+
+def payment(request, user_profile, order):
+    summary = order.purchase_info()
     if request.POST:
         token = request.POST['stripeToken']
-        Order.objects.filter(customer=userprof, status__startswith="CRE").update(status="CREPAID", payment=token)
         page_vars = view_vars(request)
         page_vars['summary'] = summary
         page_vars['token'] = token
@@ -146,8 +174,8 @@ def payment(request, userprof, order):
         return render(request, "checkout/accept-payment.html", page_vars)
         
 
-def confirmation(request, userprof, order):
-    summary = order.info()
+def confirmation(request, user_profile, order):
+    summary = order.purchase_info()
     
     if request.POST:
         
@@ -161,20 +189,20 @@ def confirmation(request, userprof, order):
             )
         except stripe.error.CardError as e:
             return HttpResponseRedirect('/checkout')
-        valid, final = finalize_order(userprof, order, token, summary)
+        valid, final = finalize_order(user_profile, order, token, summary)
         if valid:
-            order = Order.objects.filter(customer=userprof, status__startswith="CRE").update(status="CHEKOUT")
-            ShoppingCart.objects.filter(owner=request.user).delete()
+            order = Order.objects.filter(customer=user_profile, status__startswith="CRE").update(status="CHEKOUT")
+            ShoppingCart.objects.filter(customer=request.user).delete()
             
             email = {
                 'subject': 'Order Confirmation for ' + summary['desc'],
                 'from': 'wcubedcompany@gmail.com',
-                'to': userprof.user.email,
+                'to': user_profile.user.email,
                 }
             text = get_template('email/confirmation_email.txt')
             htmlt = get_template('email/confirmation_email.html')
-            final.sub = final.total - Decimal(final.shipping()['rate'])
-            d = Context({ 'order': final, 'shipping': final.shipping()
+            final.sub = final.total - Decimal(final.get_shipment()['rate'])
+            d = Context({ 'order': final, 'shipping': final.get_shipment()
                 
                 })
             email['text'] = text.render(d)
@@ -190,7 +218,7 @@ def confirmation(request, userprof, order):
 
 
 def create_order(user):
-    cart = ShoppingCart.objects.get(owner=user.id)
+    cart = ShoppingCart.objects.get(customer=user.id)
 
     order = Order.objects.create(customer=user,
                                  cart=cart,
@@ -200,15 +228,10 @@ def create_order(user):
     return order
 
 
-def finalize_order(userprof, order, payment, info):
-    ship = ezpost.buy(order.shipping_object)
+def finalize_order(user_profile, order, payment, info):
+    # ship = ezpost.buy(order.shipping_object)
 
     # get the order
     # modify it so it's finalized and has a finalized time
     # do whatever other shit needs to happen
     return True
-
-
-def create_shipment(address):
-
-    return easypost.S

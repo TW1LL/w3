@@ -17,7 +17,7 @@ def view(request, id=None):
         page_vars['title'] = "Order Summary"
         order = Order.objects.filter(id=id)[0]
     page_vars['order'] = order
-    page_vars['shipment'] = order.shipping()
+    page_vars['shipment'] = order.get_shipment()
     page_vars['order'].sub = page_vars['order'].total - Decimal(page_vars['shipment']['rate'])
     page_vars['order'].image = order.items.all()[0].image
     return render(request, "order/viewOrder.html", page_vars)

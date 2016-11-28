@@ -3,7 +3,7 @@ from django.core.mail import EmailMultiAlternatives
 import easypost, json, stripe
 from w3 import settings
 
-if settings.DEBUG == True:
+if settings.DEBUG:
     easypost.api_key = 'PtuiK6fa0pnWTL9cVMbT4A'
     stripe.api_key = 'sk_test_rkjc0dbKQXNuxKL8Vv3ufwBl'
 else:
@@ -12,13 +12,13 @@ else:
 
 
 def stripe_token():
-    if settings.DEBUG is True:
+    if settings.DEBUG:
         return 'pk_test_zYPD04M9BfHgurntkeskiIRr'
     else:
         return 'pk_live_RcuDbpBGm72ekMijPkNHr4xO'
 
 
-def view_vars(request = None):
+def view_vars(request=None):
     page = {
         'title': 'w3',
         'slogan': '',
@@ -44,9 +44,9 @@ def view_vars(request = None):
             page['usernav']['dropdown'][0] = {'link': '/account', 'title': 'Account'}
             page['usernav']['dropdown'][1] = {'link': '/account/logout', 'title': 'Logout'}
             try:
-                cart = ShoppingCart.objects.get(owner=request.user.id)
+                cart = ShoppingCart.objects.get(customer=request.user.id)
             except ShoppingCart.DoesNotExist:
-                cart = ShoppingCart.objects.create(owner=request.user)
+                cart = ShoppingCart.objects.create(customer=request.user)
             cart_count = cart.count_items()
         else:
             cart_count = 0
@@ -58,43 +58,7 @@ def view_vars(request = None):
     return {'page': page, 'cart_count': cart_count }
 
 
-class Shipment:
-    def create_shipment(self, address):
-
-        self.fromAddress = easypost.Address.create(
-          company = 'Wagner Co.',
-          street1 = '12 Hawk Drive',
-          city = 'West Windsor',
-          state = 'NJ',
-          zip = '08550',
-          phone = '609-468-0142'
-        )
-        self.parcel = easypost.Parcel.create(
-            predefined_package = 'SmallFlatRateBox',
-            weight = 10
-        )
-        if address is not None:
-            self.toAddress = easypost.Address.create(name= address[0],company= address[1],street1 = address[2], city = address[3], state = address[4], zip = address[5])
-            self.shipment = easypost.Shipment.create(to_address = self.toAddress, from_address = self.fromAddress, parcel = self.parcel)
-
-        self.toAddress = easypost.Address.create(name= address[0],company= address[1],street1 = address[2], city = address[3], state = address[4], zip = address[5])
-
-        self.shipment = easypost.Shipment.create(to_address = self.toAddress, from_address = self.fromAddress, parcel = self.parcel)
-        return self.shipment
-    
-    def view_rates(self, id = None):
-        return self.shipment.rates
-        
-    def buy(self, shipment):
-        shipment = json.loads(shipment)
-        self.shipment = easypost.Shipment.retrieve(shipment['shipment_id'])
-        self.shipment.buy(rate={'id': shipment['id']})
-        return [self.shipment.postage_label.label_url, self.shipment.tracking_code]
-        
-
 def send_email(email):
     msg = EmailMultiAlternatives(email['subject'], email['text'], email['from'], [email['to']])
     msg.attach_alternative(email['html'], "text/html")
     msg.send()
-
-ezpost = Shipment()
