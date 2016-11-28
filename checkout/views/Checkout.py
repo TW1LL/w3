@@ -36,8 +36,8 @@ def shipment(request):
     elif order_status == Order.STATUS_CHOICES['Addressed']:
         return shipping_method(request, user_profile, order)
     elif order_status == Order.STATUS_CHOICES['Shipping Chosen']:
-        return payment(request, user_profile, order)
-    elif order_status == [Order.STATUS_CHOICES['Ready to Ship'], Order.STATUS_CHOICES['Shipped']]:
+        return payment(request, order)
+    elif order_status in (Order.STATUS_CHOICES['Ready to Ship'], Order.STATUS_CHOICES['Shipped']):
         return confirmation(request, user_profile, order)
     else:
         raise Exception("Unable to handle order status.")
@@ -64,7 +64,7 @@ def address(request, user_profile, order):
         else:
             user_address = user_profile.address
             form = UserProfileForm(initial={
-                'pk': user_address.user,
+                'pk': user_address.customer,
                 'first_name': user_address.first_name,
                 'last_name': user_address.last_name,
                 'company_name': user_address.company_name,
@@ -98,14 +98,19 @@ def shipping_create(request, user_profile):
                 })
             else:
                 current_address = user_profile.address
-                if len(current_address) > 1:
+                if current_address is not None:
                     form = UserProfileForm(initial={
                         'first_name': current_address.first_name,
                         'last_name': current_address.last_name,
-                        'street_address': current_address.street_address,
+                        'company_name': current_address.company_name,
+                        'street_address1': current_address.street_address1,
+                        'street_address2': current_address.street_address2,
                         'city': current_address.city,
                         'state': current_address.state,
-                        'zipcode': current_address.zipcode
+                        'zipcode': current_address.zipcode,
+                        'country': current_address.country,
+                        'phone': current_address.phone,
+                        'email': current_address.email
                     })
                 else:
                     form = UserProfileForm(initial={
@@ -158,19 +163,33 @@ def get_choice_rate_ids(post):
     return chosen_rates
 
 
-def payment(request, user_profile, order):
+def payment(request, order):
     summary = order.purchase_info()
+    page_vars = view_vars(request)
+    page_vars['summary'] = summary
+
     if request.POST:
         token = request.POST['stripeToken']
-        page_vars = view_vars(request)
-        page_vars['summary'] = summary
+        try:
+            charge = stripe.Charge.create(
+                amount=int(summary['total']['card']),
+                currency="usd",
+                source=token,
+                description="Order #{}".format(order.id)
+            )
+            order.finalize()
+        except stripe.error.CardError as e:
+            # handle the failed card
+            pass
+
+        # clear the cart quantity manually - bit of a hack
+        page_vars['summary']['qty'] = 0
+
         page_vars['token'] = token
         return render(request, "checkout/confirmation.html", page_vars)
     else:
-        page_vars = view_vars(request)
         summary['image'] = '/static/cart/images/cross-sect.jpg'
         page_vars['stripe'] = stripe_token()
-        page_vars['summary'] = summary
         return render(request, "checkout/accept-payment.html", page_vars)
         
 

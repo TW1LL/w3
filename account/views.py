@@ -52,7 +52,7 @@ def account(request):
     order_items = []
     count = 0
     for order in page_vars['orders']:
-        page_vars['orders'][count].image = order.items.all()[0].image
+        page_vars['orders'][count].image = order.get_items.all()[0].image
         count += 1
     page_vars['info'] = {}
     page_vars['info']['address'] = info.get_address.split('\n')

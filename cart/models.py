@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.base import ContentFile
 from django.contrib.staticfiles.templatetags.staticfiles import static
+
 from w3.settings import MEDIA_ROOT
 from PIL import Image
 
@@ -224,19 +225,21 @@ class ShoppingCart(models.Model):
     def get_cart_items(self):
         return list(CartItem.objects.filter(cart=self.id).all())
 
+    def clear(self):
+        for item in CartItem.objects.filter(cart=self.id).all():
+            item.delete()
+
 
 class CartItem(models.Model):
     # a wrapper for the item class to allow tracking quantity of a given item in the cart
     quantity = models.IntegerField(default=1)
-    cart = models.ForeignKey(ShoppingCart)
+    cart = models.ForeignKey(ShoppingCart, null=True, blank=True)
     item = models.ForeignKey(Category)
 
     def change_quantity(self, count=1):
         self.quantity += count
 
-        print(self.quantity)
         if self.quantity < 1:
-            print("deleting")
             self.delete()
         else:
             self.save()

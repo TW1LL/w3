@@ -19,7 +19,7 @@ def view(request, id=None):
     page_vars['order'] = order
     page_vars['shipment'] = order.get_shipment()
     page_vars['order'].sub = page_vars['order'].total - Decimal(page_vars['shipment']['rate'])
-    page_vars['order'].image = order.items.all()[0].image
+    page_vars['order'].image = order.get_items.all()[0].image
     return render(request, "order/viewOrder.html", page_vars)
 
 
@@ -30,6 +30,6 @@ def history(request):
     page_vars['orders'] = order
     count = 0
     for order in page_vars['orders']:
-        page_vars['orders'][count].image = order.items.all()[0].image
+        page_vars['orders'][count].image = order.get_items.all()[0].image
         count += 1
     return render(request, "order/viewHistory.html", page_vars)

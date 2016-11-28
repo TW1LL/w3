@@ -105,7 +105,7 @@ class Order(models.Model):
 
         return address
 
-    def items(self):
+    def get_items(self):
         return ShoppingCart.objects.get(id=self.cart_id).all()
 
     def get_shipment(self):
@@ -129,7 +129,9 @@ class Order(models.Model):
         self.date_modified = finalized_time
 
         # move the items from the cart (temporary) to the order (permanent)
-        for item in ShoppingCart.objects.get(self.cart_id).get_cart_items():
+        for item in ShoppingCart.objects.get(id=self.cart_id).get_cart_items():
+            item.cart = None
+            item.save()
             self.items.add(item)
 
         # release the cart since we're done with it now
@@ -152,7 +154,10 @@ class Order(models.Model):
     def get_shipping_cost(self):
         try:
             shipment = Shipment.objects.get(order=self)
-            return shipment.total_cost
+            if shipment.total_cost is None:
+                return 0
+            else:
+                return shipment.total_cost
         except Shipment.DoesNotExist:
             return 0
 
