@@ -7,7 +7,9 @@ from decimal import Decimal
 from django.db import models
 from django.utils import timezone
 
+from w3 import settings
 import easypost
+easypost.api_key = settings.EASYPOST_KEY
 
 from cart.models import Category, ShoppingCart, CartItem, Paintball, Watch
 
@@ -180,7 +182,7 @@ class Order(models.Model):
     def status(self):
         if self.finalized and self.shipping_tracking:
             return self.STATUS_CHOICES['Shipped']
-        elif self.get_shipping_cost() > 0 and self.get_payment():
+        elif self.get_shipping_cost() > 0 and self.get_payment() and self.finalized:
             return self.STATUS_CHOICES['Ready to Ship']
         elif self.get_shipping_cost() > 0 and self.address:
             return self.STATUS_CHOICES['Shipping Chosen']
@@ -204,6 +206,10 @@ class Order(models.Model):
             return Payment.objects.get(order=self.id)
         except Payment.DoesNotExist:
             return False
+
+    def purchase_shipping(self):
+        shipment = Shipment.objects.get(order=self.id)
+        return shipment.purchase_shipping()
 
 
 class Address(models.Model):
@@ -461,15 +467,6 @@ class Shipment(models.Model):
         else:
             return "Delivery Date cannot be calculated"
 
-    def buy(self):
-        # shipment = json.loads(shipment)
-        # self.shipments = easypost.Shipment.retrieve(shipment['shipment_id'])
-        # self.shipments.buy(rate={'id': shipment['id']})
-        # self.bought = True
-        # self.save()
-        # return [self.shipments.postage_label.label_url, self.shipments.tracking_code]
-        raise ValueError("Fix this shit", self)
-
     def save_shipments(self, shipments):
         """
         takes dict of shipment objects and saves them as a byte string
@@ -494,6 +491,23 @@ class Shipment(models.Model):
             total_cost += shipment_price
         self.total_cost = total_cost
         self.save()
+
+    def purchase_shipping(self):
+        # ToDo parallelize these transactions so multi-item orders take less time
+        shipments = self.get_shipments()
+
+        # iterate over all available shipment objects
+        for local_shipment_id in shipments:
+
+            easypost_shipment_id = shipments[local_shipment_id].shipment_id
+            retrieved_shipment = easypost.Shipment.retrieve(easypost_shipment_id)
+
+            for rate in retrieved_shipment.rates:
+                if rate.id == shipments[local_shipment_id].id:
+                    correct_rate = rate
+                    break
+            if not settings.DEBUG:
+                retrieved_shipment.buy(rate=correct_rate)
 
 
 class Payment(models.Model):

@@ -34,6 +34,9 @@ class WatchAdmin(admin.ModelAdmin):
     fields = [
         'name',
         'description',
+        'packaging',
+        ('custom_width', 'custom_height', 'custom_depth'),
+        'weight',
         'on_hand',
         'price',
         'image1',
@@ -42,4 +45,5 @@ class WatchAdmin(admin.ModelAdmin):
         'image4',
         'image5',
         'admin_image_list']
+
     readonly_fields = ['admin_image_list',]

@@ -1,15 +1,26 @@
 import os
+import configparser
 
 # the path of the top level folder for this site, e.g. /var/lib/www/w3
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # the path of the folder containing this file
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-SECRET_KEY = '26l$e8=c#^)+=-+bm_)x7b%1_79#r!*&5x2^esbb(38s2n_@#g'
-
 DEBUG = True
 
-ALLOWED_HOSTS = ['wcubed.co', 'www.wcubed.co', '127.0.0.1', 'w3.willwagner.me']
+config = configparser.ConfigParser()
+config.read('keys.txt')
+
+SECRET_KEY = config['django']['secret_key']
+
+if DEBUG:
+    STRIPE_KEY = config['stripe']['test']
+    EASYPOST_KEY = config['easypost']['test']
+else:
+    STRIPE_KEY = config['stripe']['prod']
+    EASYPOST_KEY = config['easypost']['prod']
+
+ALLOWED_HOSTS = ['wcubed.co', 'www.wcubed.co', '127.0.0.1',]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
@@ -22,7 +33,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'localflavor',
 
     # actual apps
     'account',

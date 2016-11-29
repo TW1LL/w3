@@ -1,7 +1,9 @@
-from cart.models import ShoppingCart, CartItem
 from django.core.mail import EmailMultiAlternatives
-import easypost, json, stripe
+import easypost
+import stripe
+
 from w3 import settings
+from cart.models import ShoppingCart
 
 if settings.DEBUG:
     easypost.api_key = 'PtuiK6fa0pnWTL9cVMbT4A'

@@ -182,7 +182,6 @@ def payment(request, order):
                 source=token,
                 description="Order #{}".format(order.id)
             )
-            order.finalize()
 
             # create payment for the order
             order_payment = Payment(order=order, id_string=charge.id, amount=charge.amount,
@@ -191,6 +190,8 @@ def payment(request, order):
 
             # buy shipping for all packages
             order.purchase_shipping()
+
+            order.finalize()
 
         except stripe.error.CardError as e:
             # handle the failed card
@@ -211,7 +212,6 @@ def confirmation(request, order):
     summary = order.purchase_info()
     page_vars = view_vars(request)
     page_vars['summary'] = summary
-    page_vars['token'] = order.payment
     return render(request, "checkout/confirmation.html", page_vars)
 
 
