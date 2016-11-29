@@ -9,7 +9,7 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 DEBUG = True
 
 config = configparser.ConfigParser()
-config.read('keys.txt')
+config.read(os.path.join(BASE_DIR, 'keys.txt'))
 
 SECRET_KEY = config['django']['secret_key']
 

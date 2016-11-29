@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from w3 import settings
 import easypost
@@ -334,13 +335,13 @@ class Shipment(models.Model):
         try:
             if item.paintball:
                 return "Paintball"
-        except KeyError:
+        except Paintball.DoesNotExist:
             pass
 
         try:
             if item.watch:
                 return "Watch"
-        except KeyError:
+        except Watch.DoesNotExist:
             pass
 
         raise RuntimeError("""Couldn't identify item type.
@@ -428,10 +429,15 @@ class Shipment(models.Model):
                 raise RuntimeError("""Could not find the model to retrieve item for shipping display.
                                       Have you added a case for your category?""")
 
+            try:
+                preview_image = item.preview_image.url
+            except ValueError:
+                preview_image = static('cart/images/w3.png')
+
             shipment_vars = {
                 "item": item,
                 "item_name": item.name,
-                "item_image": item.preview_image.url,
+                "item_image": preview_image,
                 "key": key,
                 "rates": []
             }

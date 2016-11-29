@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from cart.views.functions import view_vars
 from checkout.models import Order
@@ -28,7 +29,10 @@ def history(request):
     page_vars['orders'] = order
     count = 0
     for order in page_vars['orders']:
-        page_vars['orders'][count].image = order.get_items()[0].item.preview_image.url
+        try:
+            page_vars['orders'][count].image =  order.get_items()[0].item.preview_image.url
+        except ValueError:
+            page_vars['orders'][count].image =  static('cart/images/w3.png')
         page_vars['orders'][count].total = order.total
         page_vars['orders'][count].created = order.date_created
         count += 1

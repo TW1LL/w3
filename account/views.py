@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from account.forms import RegistrationForm, AddressForm
 from account.models import CustomerProfile
@@ -50,8 +51,13 @@ def account(request):
 
     page_vars['orders'] = Order.objects.filter(customer=request.user).order_by('-id')[:2]
     count = 0
+
     for order in page_vars['orders']:
-        page_vars['orders'][count].image = order.get_items()[0].item.preview_image.url
+        try:
+            page_vars['orders'][count].image =  order.get_items()[0].item.preview_image.url
+        except ValueError:
+            page_vars['orders'][count].image =  static('cart/images/w3.png')
+
         page_vars['orders'][count].total = order.total
         page_vars['orders'][count].created = order.date_created
         count += 1
