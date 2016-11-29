@@ -46,7 +46,7 @@ class RegistrationForm(forms.ModelForm):
         return user
 
 
-class UserProfileForm(forms.Form):
+class AddressForm(forms.Form):
     first_name = forms.CharField(label="First Name", widget=forms.TextInput)
     last_name = forms.CharField(label="Last Name", widget=forms.TextInput)
     company_name = forms.CharField(label="Company Name", widget=forms.TextInput, required=False)
@@ -60,31 +60,21 @@ class UserProfileForm(forms.Form):
     email = forms.CharField(label="Email", widget=forms.TextInput)
 
     class Meta:
-        model = CustomerProfile
+        model = Address
         exclude = ["customer"]
 
     def save(self):
-        user_profile = CustomerProfile.objects.get(id=self.user)
+        customer_profile, created = CustomerProfile.objects.get_or_create(customer=self.user)
         user_cart = ShoppingCart.objects.get(customer=self.user)
         order = Order.objects.get(cart=user_cart)
 
-        address_is_new = False
-        # ToDo: look at all addresses to make sure it's not a duplicate, not just the active address
-        if order.address:
-            for field in self.cleaned_data:
-                value = self.cleaned_data[field]
-                address_value = getattr(user_profile.address, field)
-                if value != address_value:
-                    address_is_new = True
-                    break
-        else:
-            address_is_new = True
+        address_is_new = self.duplicates_existing_address(self.cleaned_data)
 
         if address_is_new:
             # make sure the old address isn't pulled as most recent
-            if user_profile.address:
-                user_profile.address.most_current = False
-                user_profile.address.save()
+            if customer_profile.address:
+                customer_profile.address.most_current = False
+                customer_profile.address.save()
 
             address = Address.objects.create(
                 customer=User.objects.get(id=self.user),
@@ -105,8 +95,46 @@ class UserProfileForm(forms.Form):
             order.address = address
             order.save()
 
-            user_profile.address = address
-            user_profile.save()
+            customer_profile.address = address
+            customer_profile.save()
 
-            User.objects.filter(pk=user_profile.customer_id).update(first_name=self.cleaned_data['first_name'],
-                                                                    last_name=self.cleaned_data['last_name'])
+            User.objects.filter(pk=customer_profile.customer_id).update(first_name=self.cleaned_data['first_name'],
+                                                                        last_name=self.cleaned_data['last_name'])
+
+    def duplicates_existing_address(self, new_address):
+        """
+        Determines whether a dict of address data matches any existing addresses for this user.
+        :param new_address: dict of new address data
+        :return: boolean of whether address matches an existing address
+        """
+
+        addresses = Address.objects.filter(customer=self.user)
+
+        for address in addresses:
+            match = True
+            for field in self.cleaned_data:
+                value = self.cleaned_data[field]
+                address_value = getattr(address, field)
+                if value != address_value:
+                    match = False
+                    break
+            if match:
+                self.set_most_current_address(address)
+                return False
+
+        else:
+            return True
+
+    @staticmethod
+    def set_most_current_address(address):
+        order = Order.objects.get(customer=address.customer_id, finalized=False)
+
+        current_address = Address.objects.get(customer=order.customer_id, most_current=True)
+        current_address.most_current = False
+        current_address.save()
+
+        address.most_current = True
+        address.save()
+
+        order.address = address
+        order.save()

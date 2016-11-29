@@ -37,7 +37,6 @@ class Order(models.Model):
     customer = models.ForeignKey('auth.User')
     cart = models.OneToOneField(ShoppingCart, null=True)
     address = models.ForeignKey('checkout.Address', null=True)
-    payment = models.CharField(null=True, max_length=255, default="None")
 
     date_created = models.DateTimeField(editable=False)
     date_modified = models.DateTimeField()
@@ -47,7 +46,7 @@ class Order(models.Model):
 
     items = models.ManyToManyField(CartItem)
     desc = models.CharField(max_length=255, default="1 Order")
-    total = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    total = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
 
     shipping_label = models.TextField(default="None")
     shipping_tracking = models.TextField(default="None")
@@ -64,11 +63,19 @@ class Order(models.Model):
         Create purchase object
         :return:
         """
-        cart = ShoppingCart.objects.get(id=self.cart_id)
-        items = cart.get_cart_items()
-        item_cost = cart.total_item_price()
+        try:
+            cart = ShoppingCart.objects.get(id=self.cart_id)
+            items = cart.get_cart_items()
+            item_cost = cart.total_item_price()
+            count = cart.count_products()
+        except ShoppingCart.DoesNotExist:
+            # dealing with an inactive order
+            items = self.get_items()
+            item_cost = sum([item.get_price() * item.get_quantity() for item in items])
+            count = len(items)
+
         shipping_cost = self.get_shipping_cost()
-        total_cost = item_cost + shipping_cost
+        total_cost = Decimal(item_cost + shipping_cost)
 
         self.total = total_cost
         self.save()
@@ -77,19 +84,19 @@ class Order(models.Model):
             'sub': item_cost,
             'shipping': shipping_cost,
             'total': total_cost,
-            'card': total_cost * 100 # in cents for stripe
+            'card': total_cost * 100  # in cents for stripe
         }
 
         purchase = {
             'total_qty': 0,
-            'qty': cart.count_items(),
+            'qty': count,
             'address': "",
             'desc_item': items[0].item,
-            'desc': str(items[0].quantity) + " " + items[0].item.name,
-            'total': total
+            'desc': "{} {}".format(str(items[0].quantity), items[0].item.name),
+            'total': total,
+            'item_list': ', '.join([item.name() for item in items])
         }
 
-        count = cart.count_products()
         if count > 1:
             purchase['desc'] = purchase['desc'] + ' and ' + str(count - 1) + ' more item(s).'
 
@@ -104,6 +111,30 @@ class Order(models.Model):
 
         return purchase
 
+    def shipping_info(self):
+        shipments = self.get_shipment().get_shipments()
+
+        info = []
+        for item in shipments:
+            item_info = {
+                'methods': "{} {}".format(shipments[item].carrier, shipments[item].service),
+                'est_delivery': "{} days".format(shipments[item].est_delivery_days),
+                'guaranteed_delivery': "",
+                'tracking_num': "",
+                'order_date': self.date_finalized
+            }
+            try:
+                item_info["tracking_num"] = shipments[item].tracking_code
+            except AttributeError:
+                pass
+
+            if shipments[item].delivery_date_guaranteed is not None:
+                item_info['guaranteed_delivery'] = "{} days".format(shipments[item].delivery_date_guaranteed)
+
+            info.append(item_info)
+
+        return info
+
     def get_address(self):
         address = Address.objects.get(id=self.address_id)
 
@@ -114,7 +145,6 @@ class Order(models.Model):
             return CartItem.objects.filter(cart=self.cart_id)
         else:
             return self.items.select_related()
-
 
     def get_shipment(self):
         try:
@@ -150,7 +180,7 @@ class Order(models.Model):
     def status(self):
         if self.finalized and self.shipping_tracking:
             return self.STATUS_CHOICES['Shipped']
-        elif self.get_shipping_cost() > 0 and self.payment != 'None':
+        elif self.get_shipping_cost() > 0 and self.get_payment():
             return self.STATUS_CHOICES['Ready to Ship']
         elif self.get_shipping_cost() > 0 and self.address:
             return self.STATUS_CHOICES['Shipping Chosen']
@@ -168,6 +198,12 @@ class Order(models.Model):
                 return shipment.total_cost
         except Shipment.DoesNotExist:
             return 0
+
+    def get_payment(self):
+        try:
+            return Payment.objects.get(order=self.id)
+        except Payment.DoesNotExist:
+            return False
 
 
 class Address(models.Model):
@@ -458,3 +494,14 @@ class Shipment(models.Model):
             total_cost += shipment_price
         self.total_cost = total_cost
         self.save()
+
+
+class Payment(models.Model):
+    """
+    Stripe payment information for a single order
+    """
+    order = models.ForeignKey(Order)
+    id_string = models.TextField(max_length=50)
+    amount = models.IntegerField()
+    balance_transaction = models.TextField(max_length=50)
+    paid = models.BooleanField(default=True)

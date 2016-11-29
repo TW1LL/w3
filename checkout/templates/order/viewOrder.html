@@ -13,15 +13,9 @@
                   <div class="col s12 m6">
                       <div class="card-panel">
                           <div class="row" style="margin-bottom: 0px">
-                              <div class="col s1"><img src="{% static order.image %}" class="circle responsive-img"></div>
-                              <div class="col s11"><a href="/product/{{summary.desc_item.id}}">{{order.desc}}</a></div>
+                              <div class="col s1"><img src="{{ summary.desc_item.preview_image.url }}" class="circle responsive-img"></div>
+                              <div class="col s11">{{summary.item_list}}</div>
                           </div>
-                      </div>
-                  </div>
-                  <div class="col s12 m6">
-                      <div class="card-panel">
-                          <span class="grey-text">Ordered on </span>{{order.created|date:"F d, Y"}}
-                          
                       </div>
                   </div>
               </div>
@@ -29,34 +23,39 @@
                 <div class="col m4 s12">
                   <div class="card-panel">
                     <span class="grey-text">Shipping Address:</span>
-                    {{order.shipping_address | linebreaks}}
+                    {{summary.address | linebreaks}}
                 </div>  
                 </div>
                 <div class="col m8 s12">
                     <div class="card-panel">
                         <span class="grey-text">Shipping Information:</span>
-                        <ul class="collection">
-                            <li class="collection-item">Method: <span class="right">{{shipment.carrier}} {{shipment.service}}</span></li>
-                            <li class="collection-item">Estimated Delivery Days: <span class="right">{{shipment.est_delivery_days}} days</span></li>
-                            <li class="collection-item">Guranteed Delivery Date: <span class="right">{{shipment.delivery_date_guaranteed}}</span></li>
-                            <li class="collection-item blue-grey lighten-3"><b>Tracking Number</b>: <span class="right">{{order.shipping_tracking}}</span></li>
-                        </ul>
+                        {% for item in shipment %}
+                            <ul class="collection">
+                                <li class="collection-item"><span class="grey-text">Ordered on </span>{{item.order_date|date:"F d, Y"}}</li>
+                                <li class="collection-item">Method: <span class="right">{{item.methods | linebreaks}}</span></li>
+                                <li class="collection-item">Estimated Delivery Days: <span class="right">{{item.est_delivery | linebreaks}}</span></li>
+                                <li class="collection-item">Guaranteed Delivery Date: <span class="right">
+                                    {% if item.guaranteed_delivery %}
+                                        {{item.guaranteed_delivery | linebreaks}}
+                                    {% else %}
+                                        No guaranteed delivery date available.
+                                    {% endif %}
+                                </span></li>
+                                <li class="collection-item blue-grey lighten-3"><b>Tracking Number</b>: <span class="right">{{order.shipping_tracking}}</span></li>
+                            </ul>
+                        {% endfor %}
                     </div>
                 </div>
                 
               </div>
                 
               <ul class="collection">
-                  <li class="collection-item">Subtotal: <span class="right">$ {{order.sub|floatformat:2}}</span></li>
-                  <li class="collection-item">Shipping: <span class="right">$ {{shipment.rate|floatformat:2}}</span></li>
-                  <li class="collection-item">Total Paid:<span class="right">$ {{order.total |floatformat:2}}</span></li>
+                  <li class="collection-item">Subtotal: <span class="right">$ {{summary.total.sub|floatformat:2}}</span></li>
+                  <li class="collection-item">Shipping: <span class="right">$ {{summary.total.shipping|floatformat:2}}</span></li>
+                  <li class="collection-item">Total Paid:<span class="right">$ {{summary.total.total |floatformat:2}}</span></li>
               </ul>
 
           
-        </div>
-        <div class="card-action">
-            <p>Your order has been finalized. </p>
-
         </div>
       </div>
       

@@ -1,18 +1,15 @@
 import stripe
-from decimal import Decimal
 from datetime import datetime
 
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-from django.template.loader import get_template
-from django.template import Context
 
-from account.forms import UserProfileForm
+from account.forms import AddressForm
 from account.models import CustomerProfile
 from cart.models import ShoppingCart
-from cart.views.functions import view_vars, send_email, stripe_token
-from checkout.models import Order, Shipment
+from cart.views.functions import view_vars, stripe_token
+from checkout.models import Order, Shipment, Payment
 
 
 @login_required(login_url='/account/login')
@@ -43,12 +40,20 @@ def shipment(request):
         raise Exception("Unable to handle order status.")
 
 
-def address(request, user_profile, order):
+def address(request, user_profile=None, order=None):
+    if user_profile:
+        user_profile = user_profile
+    else:
+        user_profile = CustomerProfile.objects.get(customer=request.user)
+    if order:
+        order = order
+    else:
+        order = Order.objects.get(customer=request.user, finalized=False)
+
     if request.method == "POST":
-        form = UserProfileForm(request.POST)
+        form = AddressForm(request.POST)
 
         if form.is_valid():
-            # send the user id from the request, rather than letting the user modify it in the HTML
             form.user = request.user.id
             form.save()
             return HttpResponseRedirect('/checkout')
@@ -60,10 +65,10 @@ def address(request, user_profile, order):
     else:
         user = user_profile.get_full_name().split(' ')
         if user_profile.address is None:
-            form = UserProfileForm(initial={'pk': user_profile.pk, 'first_name': user[0], 'last_name': user[1]})
+            form = AddressForm(initial={'pk': user_profile.pk, 'first_name': user[0], 'last_name': user[1]})
         else:
             user_address = user_profile.address
-            form = UserProfileForm(initial={
+            form = AddressForm(initial={
                 'pk': user_address.customer,
                 'first_name': user_address.first_name,
                 'last_name': user_address.last_name,
@@ -92,14 +97,14 @@ def shipping_create(request, user_profile):
             order = Order.objects.filter(customer=request.user, finalized=False)[0]
             user = user_profile.get_full_name().split(' ')
             if user_profile.address is None:
-                form = UserProfileForm(initial={
+                form = AddressForm(initial={
                     'first_name': user[0],
                     'last_name': user[1]
                 })
             else:
                 current_address = user_profile.address
                 if current_address is not None:
-                    form = UserProfileForm(initial={
+                    form = AddressForm(initial={
                         'first_name': current_address.first_name,
                         'last_name': current_address.last_name,
                         'company_name': current_address.company_name,
@@ -113,7 +118,7 @@ def shipping_create(request, user_profile):
                         'email': current_address.email
                     })
                 else:
-                    form = UserProfileForm(initial={
+                    form = AddressForm(initial={
                         'first_name': user[0],
                         'last_name': user[1]
                     })
@@ -178,6 +183,15 @@ def payment(request, order):
                 description="Order #{}".format(order.id)
             )
             order.finalize()
+
+            # create payment for the order
+            order_payment = Payment(order=order, id_string=charge.id, amount=charge.amount,
+                                    balance_transaction=charge.balance_transaction)
+            order_payment.save()
+
+            # buy shipping for all packages
+            order.purchase_shipping()
+
         except stripe.error.CardError as e:
             # handle the failed card
             pass

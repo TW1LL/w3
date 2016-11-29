@@ -9,10 +9,10 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^account/', include('account.urls')),
     url(r'^accounts/profile', account.account),
-    url(r'^checkout', Checkout.shipment),
+    url(r'^checkout/', include('checkout.urls')),
     url(r'^order$', Order.view),
     url(r'order/history', Order.history),
-    url(r'^order/(?P<id>[0-9]+)', Order.view),
+    url(r'^order/(?P<order_id>[0-9]+)', Order.view),
 
     url(r'', include('cart.urls')),
 ]

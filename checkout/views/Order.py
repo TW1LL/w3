@@ -8,18 +8,16 @@ from checkout.models import Order
 
 
 @login_required(login_url='/account/login')
-def view(request, id=None):
+def view(request, order_id=None):
     page_vars = view_vars(request)
-    if id is None:
+    if order_id is None:
         order = Order.objects.filter(customer=request.user).order_by('-id')[0]
         page_vars['title'] = "Latest Order's Summary"
     else:
         page_vars['title'] = "Order Summary"
-        order = Order.objects.filter(id=id)[0]
-    page_vars['order'] = order
-    page_vars['shipment'] = order.get_shipment()
-    page_vars['order'].sub = page_vars['order'].total - Decimal(page_vars['shipment']['rate'])
-    page_vars['order'].image = order.get_items()[0].image
+        order = Order.objects.get(id=order_id)
+    page_vars['summary'] = order.purchase_info()
+    page_vars['shipment'] = order.shipping_info()
     return render(request, "order/viewOrder.html", page_vars)
 
 

@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render
 
-from account.forms import RegistrationForm, UserProfileForm
+from account.forms import RegistrationForm, AddressForm
 from account.models import CustomerProfile
 from checkout.models import Order
 from cart.views.functions import view_vars
@@ -70,9 +70,9 @@ def account(request):
 def change_info(request):
     page_vars = view_vars(request)
     if request.method == "POST":
-        form = UserProfileForm(request.POST)
+        form = AddressForm(request.POST)
         if form.is_valid():
-            shipping_form = form.save(commit=False)
+            shipping_form = form.save()
             shipping_form.user = request.user
             shipping_form.save()
 
@@ -89,13 +89,13 @@ def change_info(request):
         user_profile = CustomerProfile.objects.get(customer=request.user.id)
         user = user_profile.get_full_name().split(' ')
         try:
-            address = user_profile.address.format_for_display()
+            address = user_profile.address
         except AttributeError:
             # no valid address
             address = None
 
         if address is not None:
-            form = UserProfileForm(
+            form = AddressForm(
                 initial={
                     'first_name': address.first_name,
                     'last_name': address.last_name,
@@ -110,7 +110,7 @@ def change_info(request):
                     'email': address.email
                 })
         else:
-            form = UserProfileForm(initial={
+            form = AddressForm(initial={
                 'first_name': user[0],
                 'last_name': user[1]
             })

@@ -25,6 +25,8 @@
                 <div class="card-panel">
                     <span class="grey-text">Ship To:</span>
                     {{summary.address | linebreaks}}
+                    <br>
+                    <a href="{% url 'address' %}">Change shipping address</a>
                 </div>
           
         {% endblock %}
@@ -32,7 +34,7 @@
         <div class="card-action">
             <p>Total:<span class="right">$ {{summary.total.total |floatformat:2}}</span></p>
             <div class="right">
-             <form action="/checkout" method="POST">
+             <form action="/checkout/" method="POST">
                 {% csrf_token %}
               <script
                 src="https://checkout.stripe.com/checkout.js" class="stripe-button"

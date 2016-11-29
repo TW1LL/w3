@@ -2,7 +2,7 @@
 
 {% block checkout-content %}
 <div class="card blue-grey darken-1">
-    <form action="/checkout" method="post">
+    <form action="/checkout/" method="post">
         {% csrf_token %}
         <div class="card-content">
             <span class="card-title">Shipping Method</span>
@@ -16,7 +16,7 @@
                         </li>
                         {% for rate in item.rates %}
                             <li class="collection-item">
-                                <input name="rate_option_{{ item.key }}" type="radio" id="{{rate.service}}+{{ item.key }}" value="{{rate.rate_id}}"/>
+                                <input name="rate_option_{{ item.key }}" type="radio" id="{{rate.service}}+{{ item.key }}" value="{{rate.rate_id}}" required/>
                                 <label for="{{rate.service}}+{{ item.key }}">
                                     {{rate.carrier}} {{rate.service}} - $ {{rate.rate|floatformat:2}}
                                     {% if rate.est_delivery_date == "Delivery Date cannot be calculated"%}
@@ -43,6 +43,8 @@
 <div class="card-panel">
     <span class="grey-text">Ship To:</span>
         {{summary.address | linebreaks}}
+        <br>
+        <a href="{% url 'address' %}">Change shipping address</a>
 </div>
 
 {% endblock %}
