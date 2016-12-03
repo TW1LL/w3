@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-
+from django.apps import apps
 from cart.models import ShoppingCart, CartItem, Watch, Paintball
 from .functions import view_vars
 
@@ -17,12 +17,9 @@ def cart_add_product(request, category, product_id):
         user_cart = ShoppingCart.objects.create(customer=request.user)
 
     # get the correct item for the category we're in
-    if category == 'watch':
-        user_item = Watch.objects.get(id=product_id)
-    elif category == 'paintball':
-        user_item = Paintball.objects.get(id=product_id)
-    else:
-        raise KeyError('Product category not found')
+    model = apps.get_model('cart', category)
+    user_item = model.objects.get(id=product_id)
+
 
     # see if the item already exists in the cart, if so just add 1 to quantity
     # if not, add the item with quantity = 1 to the cart
