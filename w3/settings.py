@@ -18,12 +18,12 @@ SECRET_KEY = config['django']['secret_key']
 
 if DEBUG:
     STRIPE_PUBLIC = config['stripe']['test_pub']
-    stripe.api_key = config['stripe']['test']
+    STRIPE_PRIVATE = config['stripe']['test']
     easypost.api_key = config['easypost']['test']
 else:
-    stripe.api_key = config['stripe']['prod']
-    easypost.api_key = config['easypost']['prod']
     STRIPE_PUBLIC = config['stripe']['prod_pub']
+    STRIPE_PRIVATE = config['stripe']['prod']
+    easypost.api_key = config['easypost']['prod']
 
 ALLOWED_HOSTS = ['wcubed.co', 'www.wcubed.co', '127.0.0.1',]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

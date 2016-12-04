@@ -1,4 +1,3 @@
-import stripe
 from datetime import datetime
 
 from django.shortcuts import render
@@ -11,6 +10,9 @@ from cart.models import ShoppingCart
 from cart.views.functions import view_vars
 from checkout.models import Order, Shipment, Payment
 from w3 import settings
+
+import stripe
+stripe.api_key = settings.STRIPE_PRIVATE
 
 
 @login_required(login_url='/account/login')
