@@ -26,6 +26,8 @@
                     <img src="{{ cart_item.image }}" alt="" class="left" width="50">
                   </td>
                   <td>
+                    <p>
+                    <a href="/product/{{cart_item.category}}/{{cart_item.item.id}}">{{ cart_item.name }}</a><br/>
                     $ {{ cart_item.price |floatformat:2}}<br />
                     <a class="red-text" href="/cart/qty/{{cart_item.id}}/-{{ cart_item.quantity }}"><i class="material-icons">delete</i></a>
                     </p>

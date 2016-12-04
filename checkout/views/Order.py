@@ -33,7 +33,5 @@ def history(request):
             page_vars['orders'][count].image =  order.get_items()[0].item.preview_image.url
         except ValueError:
             page_vars['orders'][count].image =  static('cart/images/w3.png')
-        page_vars['orders'][count].total = order.total
-        page_vars['orders'][count].created = order.date_created
         count += 1
     return render(request, "order/viewHistory.html", page_vars)

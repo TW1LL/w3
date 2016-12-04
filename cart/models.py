@@ -244,6 +244,12 @@ class CartItem(models.Model):
         else:
             self.save()
 
+    def category(self):
+        categories = Category.get_categories()
+        for category in categories:
+            if hasattr(self.item, category['name'].lower()):
+                return category['name'].lower()
+
     def get_price(self):
         return self.item.price
 
@@ -264,7 +270,3 @@ class CartItem(models.Model):
 
     def subtotal(self):
         return self.item.price * self.quantity
-
-    def category(self):
-        print(self.item.__dict__)
-        return ''

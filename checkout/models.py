@@ -167,6 +167,7 @@ class Order(models.Model):
         self.finalized = True
         self.date_finalized = finalized_time
         self.date_modified = finalized_time
+        self.desc = self.purchase_info()['desc']
 
         # move the items from the cart (temporary) to the order (permanent)
         for item in ShoppingCart.objects.get(id=self.cart_id).get_cart_items():

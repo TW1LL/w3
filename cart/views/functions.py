@@ -18,7 +18,8 @@ def view_vars(request=None):
         'title': 'w3',
         'slogan': '',
         'nav': [{'link': '/', 'title': 'Home'},
-                   {'link': '/product', 'title': 'Products'}],
+                   {'link': '/product', 'title': 'Products'},
+                    {'link': '/contact', 'title': 'Contact'}],
         'usernav': {
             'dropdown': [{'link': '/account/register', 'title': 'Register'},
                          {'link': '/account/login', 'title': 'Login'}],
