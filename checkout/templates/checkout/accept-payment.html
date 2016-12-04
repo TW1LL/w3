@@ -34,7 +34,7 @@
         <div class="card-action">
             <p>Total:<span class="right">$ {{summary.total.total |floatformat:2}}</span></p>
             <div class="right">
-             <form action="/checkout/" method="POST">
+             <form action="/checkout/confirmation" method="POST">
                 {% csrf_token %}
               <script
                 src="https://checkout.stripe.com/checkout.js" class="stripe-button"

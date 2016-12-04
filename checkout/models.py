@@ -10,7 +10,6 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from w3 import settings
 import easypost
-easypost.api_key = settings.EASYPOST_KEY
 
 from cart.models import Category, ShoppingCart, CartItem, Paintball, Watch
 

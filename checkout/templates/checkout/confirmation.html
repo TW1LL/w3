@@ -23,12 +23,16 @@
                             <span class="grey-text">Shipping To:</span>
                             {{summary.address | linebreaks}}
                         </div>
-                        <div class="card-panel">
-                            <p>Your order has been successfully placed.</p>
-                            <p>You will receive a confirmation email shortly.</p>
-                        </div>
+
                     </div>
                 </div>
+                <form action="/checkout/confirmed/" method="post">
+                    {% csrf_token %}
+                    <button type="submit" value="Change Password" class=" center waves-effect waves-light red lighten-2 btn">
+                        Confirm Order<i class="material-icons right">credit card</i>
+                    </button>
+                    <input type="hidden" value="{{stripeToken}}" name="stripeToken">
+                </form>
             {% endblock %}
         </div>
     </div>

@@ -13,13 +13,6 @@ else:
     stripe.api_key = 'sk_live_Hic99hSOWFmRHzeuCgOiXvIS'
 
 
-def stripe_token():
-    if settings.DEBUG:
-        return 'pk_test_zYPD04M9BfHgurntkeskiIRr'
-    else:
-        return 'pk_live_RcuDbpBGm72ekMijPkNHr4xO'
-
-
 def view_vars(request=None):
     page = {
         'title': 'w3',

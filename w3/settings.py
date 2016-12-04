@@ -1,6 +1,9 @@
 import os
 import configparser
 
+import easypost
+import stripe
+
 # the path of the top level folder for this site, e.g. /var/lib/www/w3
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # the path of the folder containing this file
@@ -14,11 +17,13 @@ config.read(os.path.join(BASE_DIR, 'keys.txt'))
 SECRET_KEY = config['django']['secret_key']
 
 if DEBUG:
-    STRIPE_KEY = config['stripe']['test']
-    EASYPOST_KEY = config['easypost']['test']
+    STRIPE_PUBLIC = config['stripe']['test_pub']
+    stripe.api_key = config['stripe']['test']
+    easypost.api_key = config['easypost']['test']
 else:
-    STRIPE_KEY = config['stripe']['prod']
-    EASYPOST_KEY = config['easypost']['prod']
+    stripe.api_key = config['stripe']['prod']
+    easypost.api_key = config['easypost']['prod']
+    STRIPE_PUBLIC = config['stripe']['prod_pub']
 
 ALLOWED_HOSTS = ['wcubed.co', 'www.wcubed.co', '127.0.0.1',]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

@@ -8,8 +8,9 @@ from django.contrib.auth.decorators import login_required
 from account.forms import AddressForm
 from account.models import CustomerProfile
 from cart.models import ShoppingCart
-from cart.views.functions import view_vars, stripe_token
+from cart.views.functions import view_vars
 from checkout.models import Order, Shipment, Payment
+from w3 import settings
 
 
 @login_required(login_url='/account/login')
@@ -173,46 +174,56 @@ def payment(request, order):
     page_vars = view_vars(request)
     page_vars['summary'] = summary
 
-    if request.POST:
-        token = request.POST['stripeToken']
-        try:
-            charge = stripe.Charge.create(
-                amount=int(summary['total']['card']),
-                currency="usd",
-                source=token,
-                description="Order #{}".format(order.id)
-            )
-
-            # create payment for the order
-            order_payment = Payment(order=order, id_string=charge.id, amount=charge.amount,
-                                    balance_transaction=charge.balance_transaction)
-            order_payment.save()
-
-            # buy shipping for all packages
-            order.purchase_shipping()
-
-            order.finalize()
-
-        except stripe.error.CardError as e:
-            # handle the failed card
-            pass
-
-        # clear the cart quantity manually - bit of a hack
-        page_vars['summary']['qty'] = 0
-
-        page_vars['token'] = token
-        return render(request, "checkout/confirmation.html", page_vars)
-    else:
-        summary['image'] = '/static/cart/images/cross-sect.jpg'
-        page_vars['stripe'] = stripe_token()
-        return render(request, "checkout/accept-payment.html", page_vars)
+    summary['image'] = '/static/cart/images/cross-sect.jpg'
+    page_vars['stripe'] = settings.STRIPE_PUBLIC
+    return render(request, "checkout/accept-payment.html", page_vars)
         
 
-def confirmation(request, order):
+def confirmation(request):
+    order = Order.objects.get(customer=request.user, finalized=False)
+
+    page_vars = view_vars(request)
+    page_vars['summary'] = order.purchase_info()
+    page_vars['stripeToken'] = request.POST['stripeToken']
+
+    # clear the cart quantity manually - bit of a hack
+    page_vars['summary']['qty'] = 0
+
+    return render(request, "checkout/confirmation.html", page_vars)
+
+
+def confirmed(request):
+    order = Order.objects.get(customer=request.user, finalized=False)
+
     summary = order.purchase_info()
     page_vars = view_vars(request)
     page_vars['summary'] = summary
-    return render(request, "checkout/confirmation.html", page_vars)
+
+    token = request.POST['stripeToken']
+
+    try:
+        charge = stripe.Charge.create(
+            amount=int(summary['total']['card']),
+            currency="usd",
+            source=token,
+            description="Order #{}".format(order.id)
+        )
+
+        # create payment for the order
+        order_payment = Payment(order=order, id_string=charge.id, amount=charge.amount,
+                                balance_transaction=charge.balance_transaction)
+        order_payment.save()
+
+        # buy shipping for all packages
+        order.purchase_shipping()
+
+        order.finalize()
+
+    except stripe.error.CardError as e:
+        # handle the failed card
+        pass
+
+    return HttpResponseRedirect("/order/{}".format(order.id))
 
 
 def create_order(user):
