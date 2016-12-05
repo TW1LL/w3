@@ -17,7 +17,7 @@
                         {% if product.on_hand > 0 %}
                             <a href="/product/{{ category }}/{{product.id}}/cart" class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>Add to Cart</a>
                         {% else %}
-                            <div class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>None In Stock</div>
+                            <a href="/product/{{ category }}/{{product.id}}/cart" class="btn waves-light waves-effect blue-grey darken-1 right white-text"><i class="material-icons right">shopping_cart</i>Backordered - Add to Cart</a>
                         {% endif %}
                     </div>
                 </div>

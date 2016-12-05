@@ -221,6 +221,8 @@ def confirmed(request):
 
         order.finalize()
 
+        update_item_quantities(order)
+
     except stripe.error.CardError as e:
         # handle the failed card
         pass
@@ -237,3 +239,13 @@ def create_order(user):
                                  date_modified=datetime.now()
                                  )
     return order
+
+
+def update_item_quantities(order):
+    for item in order.items.all():
+        corrected_item_count = item.get_on_hand() - item.get_quantity()
+
+        if corrected_item_count > 0:
+            item.set_on_hand(corrected_item_count)
+        else:
+            item.set_on_hand(0)

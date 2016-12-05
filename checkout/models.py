@@ -448,7 +448,7 @@ class Shipment(models.Model):
                     "carrier": rate.carrier,
                     "service": self._pascal_case_split(rate.service),
                     "rate": rate.rate,
-                    "est_delivery_date": self._generate_delivery_date(None, rate.est_delivery_days),
+                    "est_delivery_date": self._generate_delivery_date(item, rate.est_delivery_days),
                 })
 
             rates.append(shipment_vars)
@@ -468,10 +468,10 @@ class Shipment(models.Model):
         :param est_delivery_days: int
         :return: string delivery date
         """
-        if est_delivery_days:
+        if item.on_hand > 0:
             return date.today() + timedelta(est_delivery_days)
         else:
-            return "Delivery Date cannot be calculated"
+            return date.today() + timedelta(est_delivery_days) + timedelta(item.production_time)
 
     def save_shipments(self, shipments):
         """

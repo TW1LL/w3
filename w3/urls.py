@@ -13,7 +13,6 @@ urlpatterns = [
     url(r'^order$', Order.view),
     url(r'order/history', Order.history),
     url(r'^order/(?P<order_id>[0-9]+)', Order.view),
-
     url(r'', include('cart.urls')),
 ]
 

@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from cart.views.functions import view_vars
-from cart.models import Watch
+from cart.models import Watch, Category
 
 
 def index(request):
     page_vars = view_vars(request)
-    page_vars['products'] = Watch.objects.all()[:2]
+    page_vars['products'] = Category.objects.all()[:6]
     return render(request, 'page/index.html', page_vars)
 
 

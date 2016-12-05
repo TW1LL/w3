@@ -25,6 +25,8 @@ class Category(models.Model):
     name = models.CharField(max_length=255, default="New Product")
     description = models.TextField(default="Mechanical designs by w^3")
     on_hand = models.IntegerField(default=0)
+    # number of days required to fabricate the item
+    production_time = models.IntegerField(default=7)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     # important information for shipping
@@ -256,13 +258,17 @@ class CartItem(models.Model):
     def get_quantity(self):
         return self.quantity
 
+    def set_on_hand(self, quantity):
+        self.item.on_hand = quantity
+        self.item.save()
+
     def image(self):
         return self.item.image()
 
     def name(self):
         return self.item.name
 
-    def on_hand(self):
+    def get_on_hand(self):
         return self.item.on_hand
 
     def price(self):
