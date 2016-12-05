@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'account',
     'cart',
     'checkout',
-    'w3'
+    'w3',
+    'shop_manager'
 ]
 
 MIDDLEWARE = [
@@ -82,9 +83,6 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'wcubedcompany@gmail.com'
 EMAIL_HOST_PASSWORD = '0MDLVs8IDwGs'
 EMAIL_USE_TLS = True
-
-# Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
     'default': {

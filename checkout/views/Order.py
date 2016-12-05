@@ -30,8 +30,8 @@ def history(request):
     count = 0
     for order in page_vars['orders']:
         try:
-            page_vars['orders'][count].image =  order.get_items()[0].item.preview_image.url
+            page_vars['orders'][count].image = order.get_items()[0].item.preview_image.url
         except ValueError:
-            page_vars['orders'][count].image =  static('cart/images/w3.png')
+            page_vars['orders'][count].image = static('cart/images/w3.png')
         count += 1
     return render(request, "order/viewHistory.html", page_vars)

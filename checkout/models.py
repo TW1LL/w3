@@ -52,6 +52,7 @@ class Order(models.Model):
 
     shipping_label = models.TextField(default="None")
     shipping_tracking = models.TextField(default="None")
+    shipped = models.BooleanField(default=False)
 
     def __str__(self):
         return "Order for {}".format(self.customer.get_full_name())
@@ -211,6 +212,13 @@ class Order(models.Model):
     def purchase_shipping(self):
         shipment = Shipment.objects.get(order=self.id)
         return shipment.purchase_shipping()
+
+    def preview_image(self):
+        items = self.get_items()
+        try:
+            return items[0].item.preview_image
+        except ValueError:
+            return static('cart/images/w3.png')
 
 
 class Address(models.Model):

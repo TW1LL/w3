@@ -1,0 +1,31 @@
+{% extends "manager_base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            {% for order in orders %}
+                <a href="order/{{ order.id }}">
+                    <div class="col l3 m3 s4">
+                        <div class="card">
+                            <div class="card-content">
+                                <span class="card-title black-text">
+                                    Order #{{ order.id }}
+                                </span>
+                                <div class="card-panel">
+                                    <div class="row">
+                                        <img src="{{ order.preview_image.url }}"/>
+                                    </div>
+                                </div>
+                                <ul class="collection">
+                                    <li class="collection-item">Customer: {{ order.customer }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

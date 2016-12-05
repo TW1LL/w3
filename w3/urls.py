@@ -7,6 +7,7 @@ from w3 import settings
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^manage/', include('shop_manager.urls')),
     url(r'^account/', include('account.urls')),
     url(r'^accounts/profile', account),
     url(r'^checkout/', include('checkout.urls')),
