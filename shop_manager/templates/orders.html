@@ -9,16 +9,15 @@
                     <div class="col l3 m3 s4">
                         <div class="card">
                             <div class="card-content">
+                                <span>
+                                    <img src="{{ order.preview_image.url }}" class="responsive-img circle">
+                                </span>
                                 <span class="card-title black-text">
                                     Order #{{ order.id }}
                                 </span>
-                                <div class="card-panel">
-                                    <div class="row">
-                                        <img src="{{ order.preview_image.url }}"/>
-                                    </div>
-                                </div>
                                 <ul class="collection">
                                     <li class="collection-item">Customer: {{ order.customer }}</li>
+                                    <li class="collection-item">{{ order.desc }}</li>
                                 </ul>
                             </div>
                         </div>
@@ -27,5 +26,4 @@
             {% endfor %}
         </div>
     </div>
-
 {% endblock %}

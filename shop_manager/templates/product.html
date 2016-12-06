@@ -1,0 +1,88 @@
+{% extends 'manager_base.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <form class="col s12" action="" method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <img src="{{ item.preview_image.url }}" class="responsive-img circle col" style="margin-top:15px">
+                    <h1 class="col s3">{{ item.name }}</h1>
+                </div>
+                <div class="row">
+                    <div class="input field col s6">
+                        Name: <input type="text" value="{{ item.name }}" name="name">
+                    </div>
+                </div>
+                <div class="row">
+                    {% for image in item.admin_image_list %}
+                        <div class="col s2">
+                            <img src="{{ image }}" class="responsive-img">
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="row">
+                    <div class="input field col s6">
+                        <textarea type="text" value="{{ item.description }}"></textarea>
+                        <label>Description</label>
+                    </div>
+                    <div class="input field col s2">
+                        <input type="text" name="on_hand" value="{{ item.on_hand }}">
+                        <label>On Hand</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s5">
+                        <span class="grey-text">Package Size</span>
+                        <select name="packaging" id="packaging" class="browser-default">
+                            {% for size in item.sizes %}
+                                {% if  size.0 == item.packaging %}
+                                    <option value="{{ size.0 }}" selected>{{ size.1 }}</option>
+                                {% else %}
+                                    <option value="{{ size.0 }}">{{ size.1 }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-field col s2">
+                        <input type="text" name="weight" value="{{ item.weight }}">
+                        <label>Weight in Oz</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s1">
+                        <span>Custom Size</span>
+                    </div>
+                    <div class="input-field col s2">
+                        {% if item.custom_width %}
+                            <input type="text" name="custom_width" value="{{ item.custom_width }}">
+                        {% else %}
+                            <input type="text" name="custom_width">
+                        {% endif %}
+                        <label>Width</label>
+                    </div>
+                    <div class="input-field col s2">
+                        {% if item.custom_width %}
+                            <input type="text" name="custom_depth" value="{{ item.custom_depth }}">
+                        {% else %}
+                            <input type="text" name="custom_depth">
+                        {% endif %}
+                        <label>Depth</label>
+                    </div>
+                    <div class="input-field col s2">
+                        {% if item.custom_width %}
+                            <input type="text" name="custom_height" value="{{ item.custom_height }}">
+                        {% else %}
+                            <input type="text" name="custom_height">
+                        {% endif %}
+                        <label>Height</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <input type="submit" value="Update Product">
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

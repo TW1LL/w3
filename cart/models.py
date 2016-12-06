@@ -20,7 +20,10 @@ class Category(models.Model):
     plural_name
     """
 
+    # default image for categories, should be overridden when subclassing
     category_name = "Category"
+    cat_img = "cart/images/w3rect.png"
+    plural_name = "Default Plural Name"
 
     name = models.CharField(max_length=255, default="New Product")
     description = models.TextField(default="Mechanical designs by w^3")
@@ -38,7 +41,7 @@ class Category(models.Model):
         ("MediumFlatRateBox2", 'Flat Rate Medium Box 2 (13.6 x 11.8 x 5.5)'),
         ("LargeFlatRateBox", 'Flat Rate Large Box (12 x 12 x 5.5)'),
         ("LargeFlatRateBoardGameBox", 'Flat Rate Board Game Box (23.6 x 11.75 x 3)'),
-        ("custom", 'Fill out the custom size below')
+        ("custom", 'Custom Size')
     )
 
     packaging = models.CharField(max_length=100, choices=sizes, null=False, help_text="Size listed is internal inches")
@@ -58,10 +61,6 @@ class Category(models.Model):
     image4 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image5 = models.ImageField(null=True, blank=True, upload_to="uploads")
 
-    # default image for categories, should be overridden when subclassing
-    cat_img = "cart/images/w3rect.png"
-    plural_name = "Default Plural Name"
-
     # default thumbnail size
     preview_image_size = (125, 125)
 
@@ -75,8 +74,12 @@ class Category(models.Model):
     def get_categories():
         categories = []
         for cls in Category.__subclasses__():
-            categories.append({"name": cls.__name__, "image": cls.cat_img, "description": cls.cat_description,
-                               "plural_name": cls.plural_name, })
+            categories.append({
+                "name": cls.__name__,
+                "image": cls.cat_img,
+                "description": cls.cat_description,
+                "plural_name": cls.plural_name,
+            })
         return categories
 
     def get_preview_image(self):
@@ -89,8 +92,7 @@ class Category(models.Model):
         images = []
         for img in [self.image1, self.image2, self.image3, self.image4, self.image5]:
             if img:
-                images.append(u'<a href="{}"><img src="{}"/></a>'.format(
-                    img.url, img.url.replace(".jpg", "_preview.jpg")))
+                images.append(img.url)
         if images:
             return images
         else:
@@ -186,6 +188,7 @@ class Watch(Category):
     cat_img = "cart/watches/img.jpg"
     cat_description = "Sophisticated wristpieces that hold time."
     plural_name = "Watches"
+    category_name = "Watch"
 
     class Meta:
         verbose_name = "Watch"
@@ -196,6 +199,7 @@ class Paintball(Category):
     cat_img = "cart/paintball/img.jpg"
     cat_description = "Sweet gats."
     plural_name = "Paintball Products"
+    category_name = "Paintball"
 
     class Meta:
         verbose_name = "Paintball"
