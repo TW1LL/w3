@@ -215,10 +215,7 @@ def confirmed(request):
         order_payment = Payment(order=order, id_string=charge.id, amount=charge.amount,
                                 balance_transaction=charge.balance_transaction)
         order_payment.save()
-
-        # buy shipping for all packages
         order.purchase_shipping()
-
         order.finalize()
 
         update_item_quantities(order)

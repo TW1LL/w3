@@ -115,28 +115,7 @@ class Order(models.Model):
         return purchase
 
     def shipping_info(self):
-        shipments = self.get_shipment().get_shipments()
-
-        info = []
-        for item in shipments:
-            item_info = {
-                'methods': "{} {}".format(shipments[item].carrier, shipments[item].service),
-                'est_delivery': "{} days".format(shipments[item].est_delivery_days),
-                'guaranteed_delivery': "",
-                'tracking_num': "",
-                'order_date': self.date_finalized
-            }
-            try:
-                item_info["tracking_num"] = shipments[item].tracking_code
-            except AttributeError:
-                pass
-
-            if shipments[item].delivery_date_guaranteed is not None:
-                item_info['guaranteed_delivery'] = "{} days".format(shipments[item].delivery_date_guaranteed)
-
-            info.append(item_info)
-
-        return info
+        return self.get_shipment().view_final_rate()
 
     def get_address(self):
         address = Address.objects.get(id=self.address_id)
@@ -211,7 +190,7 @@ class Order(models.Model):
 
     def purchase_shipping(self):
         shipment = Shipment.objects.get(order=self.id)
-        return shipment.purchase_shipping()
+        shipment.save_shipments(shipment.purchase_shipping())
 
     def preview_image(self):
         items = self.get_items()
@@ -359,6 +338,8 @@ class Shipment(models.Model):
         """
         Create a shipment with the connected address and given item
         :param item: An item from this cart
+        :param target_dict: dictionary to put the item's shipment into
+        :param id: id for this item's shipment
         :return: Dictionary with shipment information
         """
 
@@ -462,6 +443,33 @@ class Shipment(models.Model):
             rates.append(shipment_vars)
         return rates
 
+    def view_final_rate(self):
+        shipments = self.get_shipments()
+        shipments_info = []
+        for shipment_id in shipments:
+            shipment = shipments[shipment_id]
+            item = self._get_item_from_id_string(shipment_id)
+            item_info = {
+                'methods': "{} {}".format(shipment.selected_rate.carrier,
+                                          self._pascal_case_split(shipment.selected_rate.service)),
+                'est_delivery': self._generate_delivery_date(item, shipment.selected_rate.est_delivery_days),
+                'guaranteed_delivery': "",
+                'tracking_num': shipment.tracking_code,
+                'order_date': self.order.date_finalized,
+                'label_url': shipment.postage_label.label_url
+            }
+
+            if shipment.selected_rate.delivery_date_guaranteed:
+                item_info['guaranteed_delivery'] = "{}".format(self._generate_delivery_date(
+                    item, shipment.selected_rate.delivery_date_guaranteed))
+
+            if shipment.selected_rate.delivery_date_guaranteed is not None:
+                item_info['guaranteed_delivery'] = "{} days".format(shipment.selected_rate.delivery_date_guaranteed)
+
+            shipments_info.append(item_info)
+
+        return shipments_info
+
     @staticmethod
     def _pascal_case_split(string):
         matches = finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', string)
@@ -476,10 +484,26 @@ class Shipment(models.Model):
         :param est_delivery_days: int
         :return: string delivery date
         """
+        if est_delivery_days is None:
+            return "Delivery Date cannot be calculated"
+
         if item.on_hand > 0:
-            return date.today() + timedelta(est_delivery_days)
+            calculated_date = date.today() + timedelta(est_delivery_days)
         else:
-            return date.today() + timedelta(est_delivery_days) + timedelta(item.production_time)
+            calculated_date = date.today() + timedelta(est_delivery_days) + timedelta(item.production_time)
+
+        return calculated_date.__format__("%A, %B %d, %Y").replace(' 0', ' ')
+
+    @staticmethod
+    def _get_item_from_id_string(string):
+        category, id, m, n = string.split(' ')
+
+        if category == "Paintball":
+            return Paintball.objects.get(id=id)
+        elif category == "Watch":
+            return Watch.objects.get(id)
+        else:
+            raise ValueError("Item type not known, have you updated this logic for your new item?")
 
     def save_shipments(self, shipments):
         """
@@ -510,6 +534,8 @@ class Shipment(models.Model):
         # ToDo parallelize these transactions so multi-item orders take less time
         shipments = self.get_shipments()
 
+        finalized_shipments = {}
+
         # iterate over all available shipment objects
         for local_shipment_id in shipments:
 
@@ -520,8 +546,9 @@ class Shipment(models.Model):
                 if rate.id == shipments[local_shipment_id].id:
                     correct_rate = rate
                     break
-            if not settings.DEBUG:
-                retrieved_shipment.buy(rate=correct_rate)
+            finalized_shipments[local_shipment_id] = retrieved_shipment.buy(rate=correct_rate)
+
+        return finalized_shipments
 
 
 class Payment(models.Model):

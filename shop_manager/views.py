@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import user_passes_test
+from django.http import HttpResponseRedirect
 
 from checkout.models import Order
-from cart.models import Category
+
 
 
 def admin_check(user):
@@ -30,10 +31,19 @@ def history(request):
 
 @user_passes_test(admin_check)
 def order(request, order_id):
-    context = {}
-    context['title'] = "Order Summary"
-    order = Order.objects.get(id=order_id)
-    context['summary'] = order.purchase_info()
-    context['shipment'] = order.shipping_info()
+    current_order = Order.objects.get(id=order_id)
 
-    return render(request, 'order.html', context)
+    if request.method == "POST":
+        current_order.shipped = True
+        current_order.save()
+        return HttpResponseRedirect("/manage")
+
+    else:
+        context = {
+            'title': "Order Summary",
+            'summary': current_order.purchase_info(),
+            'shipment': current_order.shipping_info(),
+            'order': current_order
+        }
+
+        return render(request, 'order.html', context)

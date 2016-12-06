@@ -20,12 +20,20 @@
                   </div>
               </div>
               <div class="row">
-                <div class="col m4 s12">
-                  <div class="card-panel">
-                    <span class="grey-text">Shipping Address:</span>
-                    {{summary.address | linebreaks}}
-                </div>  
-                </div>
+                  <div class="col m4 s12">
+                      <div class="card-panel">
+                          <span class="grey-text">Shipping Address:</span>
+                          {{summary.address | linebreaks}}
+                      </div>
+                      {% if not order.shipped %}
+                          <div class="card-panel">
+                              <form action="" method="post">
+                                  {% csrf_token %}
+                                  <button type="shipped" class="waves-effect waves-light btn">Mark as shipped.</button>
+                              </form>
+                          </div>
+                      {% endif %}
+                  </div>
                 <div class="col m8 s12">
                     <div class="card-panel">
                         <span class="grey-text">Shipping Information:</span>
@@ -33,7 +41,7 @@
                             <ul class="collection">
                                 <li class="collection-item"><span class="grey-text">Ordered on </span>{{item.order_date|date:"F d, Y"}}</li>
                                 <li class="collection-item">Method: <span class="right">{{item.methods | linebreaks}}</span></li>
-                                <li class="collection-item">Estimated Delivery Days: <span class="right">{{item.est_delivery | linebreaks}}</span></li>
+                                <li class="collection-item">Estimated Delivery Date: <span class="right">{{item.est_delivery | linebreaks}}</span></li>
                                 <li class="collection-item">Guaranteed Delivery Date: <span class="right">
                                     {% if item.guaranteed_delivery %}
                                         {{item.guaranteed_delivery | linebreaks}}
@@ -41,9 +49,11 @@
                                         No guaranteed delivery date available.
                                     {% endif %}
                                 </span></li>
-                                <li class="collection-item blue-grey lighten-3"><b>Tracking Number</b>: <span class="right">{{order.shipping_tracking}}</span></li>
+                                <li class="collection-item blue-grey lighten-3"><b>Tracking Number</b>: <span class="right">{{item.tracking_num}}</span></li>
+                                <li class="collection-item"><a href="{{ item.label_url }}" class="waves-effect waves-light btn">Get Shipping Label</a></li>
+
                             </ul>
-                        {% endfor %}
+                            {% endfor %}
                     </div>
                 </div>
               </div>

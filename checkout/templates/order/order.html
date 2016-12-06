@@ -31,9 +31,9 @@
                         <span class="grey-text">Shipping Information:</span>
                         {% for item in shipment %}
                             <ul class="collection">
-                                <li class="collection-item"><span class="grey-text">Ordered on </span>{{item.order_date|date:"F d, Y"}}</li>
+                                <li class="collection-item"><span class="grey-text">Ordered on {{item.order_date|date:"F d, Y"}}</span></li>
                                 <li class="collection-item">Method: <span class="right">{{item.methods | linebreaks}}</span></li>
-                                <li class="collection-item">Estimated Delivery Days: <span class="right">{{item.est_delivery | linebreaks}}</span></li>
+                                <li class="collection-item">Estimated Delivery Date: <span class="right">{{item.est_delivery | linebreaks}}</span></li>
                                 <li class="collection-item">Guaranteed Delivery Date: <span class="right">
                                     {% if item.guaranteed_delivery %}
                                         {{item.guaranteed_delivery | linebreaks}}
@@ -41,7 +41,7 @@
                                         No guaranteed delivery date available.
                                     {% endif %}
                                 </span></li>
-                                <li class="collection-item blue-grey lighten-3"><b>Tracking Number</b>: <span class="right">{{order.shipping_tracking}}</span></li>
+                                <li class="collection-item blue-grey lighten-3"><b>Tracking Number</b>: <span class="right">{{item.tracking_num}}</span></li>
                             </ul>
                         {% endfor %}
                     </div>

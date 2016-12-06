@@ -19,7 +19,7 @@ def view(request, order_id=None):
         order = Order.objects.get(id=order_id)
     page_vars['summary'] = order.purchase_info()
     page_vars['shipment'] = order.shipping_info()
-    return render(request, "order/viewOrder.html", page_vars)
+    return render(request, "order/order.html", page_vars)
 
 
 @login_required(login_url='/account/login')
@@ -34,4 +34,4 @@ def history(request):
         except ValueError:
             page_vars['orders'][count].image = static('cart/images/w3.png')
         count += 1
-    return render(request, "order/viewHistory.html", page_vars)
+    return render(request, "order/history.html", page_vars)
