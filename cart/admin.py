@@ -1,8 +1,9 @@
 from django.contrib import admin
-from cart.models import Watch, Paintball, ShoppingCart, CartItem
+from cart.models import Watch, Paintball, ShoppingCart, CartItem, Category
 
 admin.site.register(ShoppingCart)
 admin.site.register(CartItem)
+admin.site.register(Category)
 
 
 @admin.register(Paintball)

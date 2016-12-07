@@ -55,7 +55,7 @@ class Category(models.Model):
     # If you make changes here, make sure to make equivalent changes to the lists in:
     # image_urls() - seen in the store
     # admin_image_list() and generate_img_thumbs() - seen on the admin pages
-    image1 = models.ImageField(null=True, blank=True, upload_to="uploads")
+    image1 = models.ImageField(upload_to="uploads")
     image2 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image3 = models.ImageField(null=True, blank=True, upload_to="uploads")
     image4 = models.ImageField(null=True, blank=True, upload_to="uploads")
