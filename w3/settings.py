@@ -11,17 +11,17 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DEBUG = True
 
+# -- Secret keys --
+# Load keys that can't be added to the repo for security reasons
 config = configparser.ConfigParser()
 config.read(os.path.join(BASE_DIR, 'keys.txt'))
 
 SECRET_KEY = config['django']['secret_key']
 
 if DEBUG:
-    STRIPE_PUBLIC = config['stripe']['test_pub']
     STRIPE_PRIVATE = config['stripe']['test']
     easypost.api_key = config['easypost']['test']
 else:
-    STRIPE_PUBLIC = config['stripe']['prod_pub']
     STRIPE_PRIVATE = config['stripe']['prod']
     easypost.api_key = config['easypost']['prod']
 
