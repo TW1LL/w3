@@ -9,7 +9,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # the path of the folder containing this file
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DEBUG = True
+DEBUG = False
 
 # -- Secret keys --
 # Load keys that can't be added to the repo for security reasons
@@ -84,12 +84,25 @@ EMAIL_HOST_USER = 'wcubedcompany@gmail.com'
 EMAIL_HOST_PASSWORD = '0MDLVs8IDwGs'
 EMAIL_USE_TLS = True
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+# production database is MySQL, but it's okay to use SQLite for development
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'wcubed',
+            'USER': config['mysql']['username'],
+            'PASSWORD': config['mysql']['password'],
+            'HOST': 'localhost',
+            'PORT': '',
+        }
+    }
 
 
 # Password validation
